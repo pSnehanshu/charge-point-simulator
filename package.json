@@ -1,0 +1,19 @@
+{
+  "name": "charge-point-simulator",
+  "version": "1.0.0",
+  "description": "A charge-point simulator implementing ocpp 1.5",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/pSnehanshu/charge-point-simulator.git"
+  },
+  "author": "Snehanshu Phukon",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/pSnehanshu/charge-point-simulator/issues"
+  },
+  "homepage": "https://github.com/pSnehanshu/charge-point-simulator#readme"
+}
