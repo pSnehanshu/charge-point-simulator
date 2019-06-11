@@ -12,3 +12,9 @@ app.use(helmet());
 app.use('/static', express.static('./src/static'));
 
 // Actual routes
+
+
+// Finally, the 404 handler
+app.all('*', function (req, res) {
+    res.status(404).render('404');
+});
