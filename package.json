@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/pSnehanshu/charge-point-simulator/issues"
   },
-  "homepage": "https://github.com/pSnehanshu/charge-point-simulator#readme"
+  "homepage": "https://github.com/pSnehanshu/charge-point-simulator#readme",
+  "dependencies": {
+    "dotenv": "^8.0.0",
+    "prompts": "^2.1.0",
+    "shortid": "^2.2.14",
+    "websocket": "^1.0.28"
+  }
 }
