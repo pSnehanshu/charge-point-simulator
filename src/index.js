@@ -9,5 +9,6 @@ app.listen(port, () => console.log(`App listening on port ${port}...`));
 app.set('view engine', 'pug');
 app.set('views', './src/views');
 app.use(helmet());
+app.use('/static', express.static('./src/static'));
 
 // Actual routes
