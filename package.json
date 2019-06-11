@@ -18,6 +18,8 @@
   "homepage": "https://github.com/pSnehanshu/charge-point-simulator#readme",
   "dependencies": {
     "dotenv": "^8.0.0",
+    "express": "^4.17.1",
+    "helmet": "^3.18.0",
     "prompts": "^2.1.0",
     "shortid": "^2.2.14",
     "websocket": "^1.0.28"
