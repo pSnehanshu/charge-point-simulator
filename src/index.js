@@ -12,7 +12,9 @@ app.use(helmet());
 app.use('/static', express.static('./src/static'));
 
 // Actual routes
-
+app.get('/', function (req, res) {
+    res.render('index');
+});
 
 // Finally, the 404 handler
 app.all('*', function (req, res) {
