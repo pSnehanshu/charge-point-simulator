@@ -33,17 +33,27 @@ class ChargePoint {
             });
 
             // Write
-            fs.writeFile(cpfileroot + this.serialno +'.json', data, (err) => {
+            fs.writeFile(cpfileroot + this.serialno + '.json', data, (err) => {
                 if (err) return reject(err);
                 resolve();
             });
         });
     }
-};
+
+    charge(uid) {
+        if (this.uids.includes(uid)) {
+            var sess = new Session(uid)
+            this.sessions.push(sess);
+            return sess;
+        } else {
+            throw new Error(`The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`);
+        }
+    }
+}
 
 module.exports = function (serial) {
     return new Promise((resolve, reject) => {
-        fs.readFile(cpfileroot + serial +'.json', function (err, data) {
+        fs.readFile(cpfileroot + serial + '.json', function (err, data) {
             var cpfile = {};
             if (err) {
                 // Error occured. Maybe file doesn't exists. That means, it's a new CP
