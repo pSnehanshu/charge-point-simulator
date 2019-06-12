@@ -2,6 +2,10 @@
 tmp/
 temp/
 
+# data directories
+charge-points/
+logs/
+
 # Logs
 logs
 *.log
