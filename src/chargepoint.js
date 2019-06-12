@@ -1,21 +1,63 @@
+const fs = require('fs');
 const Session = require('./session');
+const cpfileroot = './charge-points/';
 
 class ChargePoint {
-    constructor(serial, uids = []) {
-        // Store serial number
-        this.serialno = serial;
+    constructor(cpfile = {}) {
+        this.uids = [];
+        this.sessions = [];
 
-        // Store the given UIDs
-        if (!Array.isArray(uids)) uids = [uids];
-        this.uids = shuffle(uids);
+        if (cpfile.serialno) {
+            this.serialno = cpfile.serialno;
+
+            if (Array.isArray(cpfile.uids)) {
+                this.uids = cpfile.uids;
+
+                if (Array.isArray(cpfile.sessions)) {
+                    cpfile.sessions.forEach(sess => {
+                        if (this.uids.includes(sess.uid)) {
+                            this.sessions.push(sess);
+                        }
+                    });
+                }
+            }
+        }
     }
 
-    start() {
-        
+    save() {
+        return new Promise((resolve, reject) => {
+            var data = JSON.stringify({
+                serialno: this.serialno,
+                uids: this.uids,
+                sessions: this.sessions,
+            });
+
+            // Write
+            fs.writeFile(cpfileroot + this.serialno +'.json', data, (err) => {
+                if (err) return reject(err);
+                resolve();
+            });
+        });
     }
 };
 
-module.exports = ChargePoint;
+module.exports = function (serial) {
+    return new Promise((resolve, reject) => {
+        fs.readFile(cpfileroot + serial +'.json', function (err, data) {
+            var cpfile = {};
+            if (err) {
+                // Error occured. Maybe file doesn't exists. That means, it's a new CP
+                cpfile.serialno = serial;
+            } else {
+                cpfile = JSON.parse(data);
+                cpfile.serialno = serial;
+            }
+
+            var cp = new ChargePoint(cpfile);
+            return resolve(cp);
+        });
+    });
+}
 
 
 function shuffle(array) {
