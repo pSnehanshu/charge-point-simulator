@@ -1,7 +1,25 @@
 extends layout
 
 block title 
-    | Simulator ##{serialno}
+    | Charge point ##{serialno}
 
 block content
     h2 CP ##{serialno}
+
+    fieldset
+        legend Driver UIDs
+        .w3-border.w3-padding
+            form(action="/setcpduids", method="post", enctype="multipart/form-data")
+                label(for="uid-upload") Upload a Driver UID file in csv format
+                input#uid-upload.w3-margin-left.w3-border(type="file", name="uid")
+                button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
+
+        ol
+            each uid in uids
+                li UID ##{uid}
+    
+    fieldset
+        legend Status
+        pre#status.
+            Things are working fine.
+            Let's see how they do...
