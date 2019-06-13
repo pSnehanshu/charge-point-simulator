@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
+const fileUpload = require('express-fileupload');
 const cp = require('./cp');
 
 // Express housekeeping
@@ -11,6 +12,7 @@ app.set('view engine', 'pug');
 app.set('views', './src/views');
 app.use(helmet());
 app.use('/static', express.static('./src/static'));
+app.use(fileUpload());
 
 global.chargepoints = {};
 
