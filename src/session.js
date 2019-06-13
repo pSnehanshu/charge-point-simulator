@@ -1,4 +1,5 @@
 const shortid = require('shortid');
+const { fork } = require('child_process');
 
 class Session {
     constructor(uid, params = {}) {
@@ -11,9 +12,10 @@ class Session {
         this.power = params.power || 5.6; // in kW (randomly between 3.7 and 11)
         this.duration = this.energy * 60 / this.power; // in minutes
         this.start = params.start || new Date;
+        this.stop = null;
 
-        // setTimeout timer for this session
-        this.timer = null;
+        // The forked sub-process
+        this.worker = null;
     }
 
     // Time elapsed in minutes
@@ -23,15 +25,23 @@ class Session {
         return elapsed / 60000;
     }
 
-    _finishTask() {
-        if (this.timer) {
-            clearTimeout(this.timer);
+    startCharging() {
+        // Kill existsing worker if exists
+        if (this.worker != null) {
+            this.worker.kill();
+            this.worker = null;
         }
-        var timeLeft = this.duration - this.elapsed;
-        this.timer = setTimeout(() => {
-            // StopTransaction
-            console.log('Stop transaction');
-        }, timeLeft * 60000);
+
+        this.worker = fork('./sessionWorker.js');
+        this.worker.send({ id: this.id, stopAfter: this.duration });
+        this.worker.on('message', function (msg) {
+            if (msg.stop) {
+                this.stop = new Date;
+            }
+            if (msg.backendMsg) {
+                console.log('> Msg from backend:', msg.backendMsg);
+            }
+        });
     }
 };
 
