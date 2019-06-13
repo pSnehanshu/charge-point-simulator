@@ -1,16 +1,10 @@
-<!DOCTYPE html>
-html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        meta(http-equiv="X-UA-Compatible", content="ie=edge")
-        title 404 - Page not found
-        style.
-            body,html{
-                font-family: 'sans-serif';
-            }
-    body
-        center
-            h1 404 Page not found
-            p The page you are looking for wasn't found on this server
+extends layout
+
+block title
+    | 404 - Page not found
+
+block content
+    center
+        h1 404 Page not found
+        p The page you are looking for wasn't found on this server
         
