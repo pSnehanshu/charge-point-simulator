@@ -42,8 +42,9 @@ class ChargePoint {
 
     charge(uid) {
         if (this.uids.includes(uid)) {
-            var sess = new Session(uid)
+            var sess = new Session(uid);
             this.sessions.push(sess);
+            sess.startCharging();
             return sess;
         } else {
             throw new Error(`The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`);
