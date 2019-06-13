@@ -10,8 +10,18 @@ html(lang="en")
             block title
     body
         #container
-            #header.w3-indigo
-                h1 Charge Point Simulator
+            #header.w3-indigo.w3-row
+                .w3-col.s12.m6.l4
+                    h1 Charge Point Simulator
+                .w3-col.s12.m6.l8
+                    .w3-right.w3-margin
+                        form(action="/cp", method="get")
+                            .w3-row
+                                .w3-col.s8.m8.l10
+                                    input.w3-input.w3-border(type="text", name="serial", placeholder="Enter CP serial number")
+                                .w3-col.s4.m4.l2
+                                    button.w3-btn.w3-border Go
+
             #body.w3-container
                 block content
             footer#footer.w3-container.w3-grey.w3-tiny

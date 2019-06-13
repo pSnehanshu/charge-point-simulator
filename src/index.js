@@ -17,6 +17,14 @@ app.get('/', function (req, res) {
     res.render('index');
 });
 
+app.get('/cp', function (req, res) {
+    if (req.query.serial) {
+        res.redirect(`/cp/${req.query.serial}`);
+    } else {
+        res.redirect('/');
+    }
+});
+
 app.get('/cp/:serial', async function (req, res) {
     var cp = await ChargePoint(req.params.serial);
     res.render('cp', cp);
