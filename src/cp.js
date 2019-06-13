@@ -1,5 +1,5 @@
 const express = require('express');
-const ChargePoint = require('./chargepoint');
+const ChargePoint = require('./classes/chargepoint');
 const router = express.Router();
 module.exports = router;
 

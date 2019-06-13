@@ -32,7 +32,7 @@ class Session {
             this.worker = null;
         }
 
-        this.worker = fork('./sessionWorker.js');
+        this.worker = fork('../sessionWorker.js');
         this.worker.send({ id: this.id, stopAfter: this.duration });
         this.worker.on('message', function (msg) {
             if (msg.stop) {
