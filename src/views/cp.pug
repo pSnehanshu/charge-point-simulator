@@ -7,6 +7,13 @@ block content
     h2 CP ##{serialno}
 
     fieldset
+        legend Actions
+        button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
+        button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
+        button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging
+        
+
+    fieldset
         legend Driver UIDs
         .w3-border.w3-padding
             form(action="/setcpduids", method="post", enctype="multipart/form-data")
