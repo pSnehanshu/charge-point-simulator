@@ -11,7 +11,27 @@ class Session {
         this.power = params.power || 5.6; // in kW (randomly between 3.7 and 11)
         this.duration = this.energy * 60 / this.power; // in minutes
         this.start = params.start || new Date;
-        this.elapsed = params.elapsed || 0;
+
+        // setTimeout timer for this session
+        this.timer = null;
+    }
+
+    // Time elapsed in minutes
+    get elapsed() {
+        var now = new Date;
+        var elapsed = this.start - now;
+        return elapsed / 60000;
+    }
+
+    _finishTask() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+        }
+        var timeLeft = this.duration - this.elapsed;
+        this.timer = setTimeout(() => {
+            // StopTransaction
+            console.log('Stop transaction');
+        }, timeLeft * 60000);
     }
 };
 
