@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
 const fileUpload = require('express-fileupload');
+const ChargePoint = require('./classes/chargepoint');
 const cp = require('./cp');
 
 // Express housekeeping
@@ -14,6 +15,11 @@ app.use(helmet());
 app.use('/static', express.static('./src/static'));
 app.use(fileUpload());
 
+/* Structure of Charge point storage
+{
+    <serialNo>: <cpInstance>
+}
+*/
 global.chargepoints = {};
 
 // Actual routes
@@ -29,8 +35,15 @@ app.get('/cp', function (req, res) {
     }
 });
 
-app.use('/cp/:serialno', function (req, res, next) {
+app.use('/cp/:serialno', async function (req, res, next) {
     req.serialno = req.params.serialno;
+    if (global.chargepoints[req.serialno]) {
+        req.cp = global.chargepoints[req.serialno];
+    } else {
+        req.cp = await ChargePoint(req.serialno);
+        global.chargepoints[req.serialno] = req.cp;
+    }
+
     next();
 }, cp);
 
