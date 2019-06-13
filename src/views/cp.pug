@@ -18,9 +18,9 @@ block content
             fieldset
                 legend Driver UIDs
                 .w3-border.w3-padding
-                    form(action="/setcpduids", method="post", enctype="multipart/form-data")
+                    form(action=`/cp/${serialno}/uid-upload`, method="post", enctype="multipart/form-data")
                         label(for="uid-upload") Upload Driver UID.csv file
-                        input#uid-upload.w3-margin-left.w3-border(type="file", name="uid")
+                        input#uid-upload.w3-margin-left.w3-border(type="file", name="uids")
                         button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
                 .w3-panel
                     each uid in uids
