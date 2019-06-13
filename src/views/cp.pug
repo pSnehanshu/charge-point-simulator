@@ -4,27 +4,35 @@ block title
     | Charge point ##{serialno}
 
 block content
+    style.
+        .uid-block{
+            display: inline-block;
+            cursor: default;
+        }
+
     h2 CP ##{serialno}
 
-    fieldset
-        legend Actions
-        button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
-        button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
-        button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging
-        
+    .w3-row
+        .w3-col.s12.m6.l6
+            fieldset
+                legend Actions
+                button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
+                button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
+                button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging
+                
+        .w3-col.s12.m6.l6
+            fieldset
+                legend Driver UIDs
+                .w3-border.w3-padding
+                    form(action="/setcpduids", method="post", enctype="multipart/form-data")
+                        label(for="uid-upload") Upload Driver UID.csv file
+                        input#uid-upload.w3-margin-left.w3-border(type="file", name="uid")
+                        button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
+                .w3-panel
+                    each uid in uids
+                        .w3-border.w3-border-white.w3-hover-border-grey.w3-padding.uid-block UID ##{uid}
+            
 
-    fieldset
-        legend Driver UIDs
-        .w3-border.w3-padding
-            form(action="/setcpduids", method="post", enctype="multipart/form-data")
-                label(for="uid-upload") Upload a Driver UID file in csv format
-                input#uid-upload.w3-margin-left.w3-border(type="file", name="uid")
-                button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
-
-        ol
-            each uid in uids
-                li UID ##{uid}
-    
     fieldset
         legend Status
         pre#status.
