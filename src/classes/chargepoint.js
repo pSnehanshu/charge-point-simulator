@@ -11,7 +11,7 @@ class ChargePoint {
             this.serialno = cpfile.serialno;
 
             if (Array.isArray(cpfile.uids)) {
-                this.uids = cpfile.uids;
+                this.uids = shuffle(cpfile.uids);
 
                 if (Array.isArray(cpfile.sessions)) {
                     cpfile.sessions.forEach(sess => {
