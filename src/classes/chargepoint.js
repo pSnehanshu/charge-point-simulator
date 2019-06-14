@@ -40,14 +40,34 @@ class ChargePoint {
         });
     }
 
-    charge(uid) {
+    start() {
+        console.log('Starting charge....');
+
+        if (this.uids.length <= 0) {
+            throw new Error('No driver UIDs added to start charging');
+        }
+        var i = 0;
+        this.charge(this.uids[i], onSessionEnd(i, this.uids, this.charge.bind(this)));
+    }
+
+    charge(uid, onEnd) {
         if (this.uids.includes(uid)) {
             var sess = new Session(uid);
             this.sessions.push(sess);
-            sess.startCharging();
+            sess.startCharging(onEnd);
             return sess;
         } else {
             throw new Error(`The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`);
+        }
+    }
+}
+
+// A helper function that helps to loop charging session one after another
+function onSessionEnd(i, uids, chargeFn) {
+    return function (sess) {
+        i++;
+        if (uids[i]) {
+            chargeFn(uids[i], onSessionEnd(i, uids, chargeFn));
         }
     }
 }

@@ -7,6 +7,12 @@ router.get('/', async function (req, res) {
     res.render('cp', req.cp);
 });
 
+router.post('/start', function (req, res) {
+    // Please start the session only if it hasn't started yet.
+    // Start the charging sessions
+    res.json(req.cp.start());
+});
+
 router.post('/uid-upload', function (req, res) {
     if (!req.files.uids) {
         return res.sendStatus(400);

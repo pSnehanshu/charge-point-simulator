@@ -32,3 +32,10 @@ block content
         pre#status.
             Things are working fine.
             Let's see how they do...
+    script.
+        $('#act-startautocharge').click(function (e) {
+            e.preventDefault();
+            $.post(`/cp/#{serialno}/start`, function(data, status) {
+                alert('Success');
+            });
+        });
