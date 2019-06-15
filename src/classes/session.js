@@ -35,6 +35,7 @@ class Session {
             this.worker = null;
         }
 
+        console.log(`Charging UID #${this.uid}`);
         this.worker = fork(workerScript);
         this.worker.send({ id: this.id, stopAfter: this.duration });
         this.worker.on('message', function (msg) {
@@ -43,9 +44,6 @@ class Session {
                 if (typeof onEnd == 'function') {
                     onEnd(this);
                 }
-            }
-            if (msg.backendMsg) {
-                console.log('> Msg from backend:', msg.backendMsg);
             }
         });
     }
