@@ -7,11 +7,24 @@ router.get('/', async function (req, res) {
     res.render('cp', req.cp);
 });
 
+router.post('/connect', function (req, res) {
+    // Please start the session only if it hasn't started yet.
+    // Start the charging sessions
+    res.json(req.cp.connect());
+});
+
 router.post('/start', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
     res.json(req.cp.start());
 });
+
+router.post('/heartbeat', function (req, res) {
+    // Please start the session only if it hasn't started yet.
+    // Start the charging sessions
+    res.json(req.cp.send('Heartbeat').then(msg => console.log(msg)));
+});
+
 
 router.post('/uid-upload', function (req, res) {
     if (!req.files.uids) {

@@ -1,4 +1,5 @@
 const fs = require('fs');
+const shortid = require('shortid');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
 
@@ -53,11 +54,12 @@ class ChargePoint {
     }
 
     connect() {
-        var key = Buffer.from(process.env.key, 'hex').toString();
+        var key = Buffer.from(process.env.KEY, 'hex').toString();
         var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
+        var url = `${process.env.BACKENDURL}/${this.serialno}`
 
         this.client = new WebSocketClient();
-        this.client.connect(`${process.env.BACKENDURL}/${this.serialno}`, 'ocpp1.5', null, {
+        this.client.connect(url, 'ocpp1.5', null, {
             Authorization: `Basic ${basicAuth}`,
         });
 
@@ -66,7 +68,9 @@ class ChargePoint {
         });
 
         this.client.on('connect', connection => {
-            thid.connection = connection;
+            console.log(`CP #${this.serialno} has successfuly connected to the backend`);
+
+            this.connection = connection;
 
             connection.on('error', function (error) {
                 console.log("Connection Error: " + error.toString());
@@ -74,8 +78,8 @@ class ChargePoint {
             connection.on('close', function () {
                 console.log('echo-protocol Connection Closed');
             });
-            connection.on('message', (message) => {
-                const msg = JSON.parse(message);
+            connection.on('message', (message) => {               
+                const msg = JSON.parse(message.utf8Data);
                 const type = msg[0];
                 const id = msg[1];
 
@@ -97,10 +101,16 @@ class ChargePoint {
 
     send(action = 'Heartbeat', payload = {}) {
         return new Promise((resolve, reject) => {
+            if (!this.connection) {
+                return reject('Connection with the backend has not yet been established. Please wait...');
+            }
             const msgTypeId = 2;
             const uniqueId = 'msg_' + shortid.generate();
-            const msg = [msgTypeId, uniqueId, action, payload];
-            this.connection.sendUTF(JSON.stringify(msg));
+            const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
+            
+            console.log('Sending', msg);
+
+            this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
         });
     }
@@ -126,7 +136,7 @@ class ChargePoint {
             throw new Error('No driver UIDs added to start charging');
         }
         var i = 0;
-        this.charge(this.uids[i], onSessionEnd(i, this.uids, this.charge.bind(this)));
+        this.charge(this.uids[i], this.onSessionEnd(i));
     }
 
     charge(uid, onEnd) {
@@ -135,21 +145,27 @@ class ChargePoint {
             this.sessions.push(sess);
             // First StartTransaction
             // Then only start charging session
-            sess.startCharging(onEnd);
+            this.send('StartTransaction', {
+                
+            }).then(msg => sess.startCharging(onEnd))
+            .catch(err => console.error(err));
+
             return sess;
         } else {
             throw new Error(`The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`);
         }
     }
-}
 
-// A helper function that helps to loop charging session one after another
-function onSessionEnd(i, uids, chargeFn) {
-    return function (sess) {
-        // First StopTransaction
-        // and then start the next transaction
-        if (uids[++i]) {
-            chargeFn(uids[i], onSessionEnd(i, uids, chargeFn));
+    // A helper function that helps to loop charging session one after another
+    onSessionEnd(i) {
+        return (sess) => {
+            // First StopTransaction
+            // and then start the next transaction
+            this.send('StopTransaction', {}).then(msg => {
+                if (this.uids[++i]) {
+                    this.charge(uids[i], this.onSessionEnd(i));
+                }
+            }).catch(err => console.error(err));
         }
     }
 }

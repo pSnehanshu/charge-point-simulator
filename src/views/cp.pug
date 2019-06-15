@@ -10,6 +10,7 @@ block content
         .w3-col.s12.m6.l6
             fieldset
                 legend Actions
+                button.w3-btn.w3-border.w3-ripple#act-connect Connect to backend
                 button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
                 button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
                 button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging
@@ -33,9 +34,21 @@ block content
             Things are working fine.
             Let's see how they do...
     script.
+        $('#act-heartbeat').click(function (e) {
+            e.preventDefault();
+            $.post(`/cp/#{serialno}/heartbeat`, function(data, status) {
+                alert('Success');
+            });
+        });
         $('#act-startautocharge').click(function (e) {
             e.preventDefault();
             $.post(`/cp/#{serialno}/start`, function(data, status) {
+                alert('Success');
+            });
+        });
+        $('#act-connect').click(function (e) {
+            e.preventDefault();
+            $.post(`/cp/#{serialno}/connect`, function(data, status) {
                 alert('Success');
             });
         });
