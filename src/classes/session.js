@@ -19,6 +19,9 @@ class Session {
 
         // The forked sub-process
         this.worker = null;
+
+        // Transaction ID to be supplied by Backend
+        this.txId = null;
     }
 
     // Time elapsed in minutes
@@ -38,7 +41,7 @@ class Session {
         console.log(`Charging UID #${this.uid}`);
         this.worker = fork(workerScript);
         this.worker.send({ id: this.id, stopAfter: this.duration });
-        this.worker.on('message', function (msg) {
+        this.worker.on('message', (msg) => {
             if (msg.stop) {
                 this.stop = new Date;
                 if (typeof onEnd == 'function') {

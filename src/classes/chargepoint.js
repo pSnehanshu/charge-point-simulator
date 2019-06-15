@@ -78,7 +78,9 @@ class ChargePoint {
             connection.on('close', function () {
                 console.log('echo-protocol Connection Closed');
             });
-            connection.on('message', (message) => {               
+            connection.on('message', (message) => {
+                console.log('<< Received:', message.utf8Data);
+
                 const msg = JSON.parse(message.utf8Data);
                 const type = msg[0];
                 const id = msg[1];
@@ -93,6 +95,8 @@ class ChargePoint {
                             this.callReg[id] = [this.callReg[id]];
                         }
                         this.callReg[id].forEach(cb => typeof cb == 'function' && cb(msg));
+                        // After all response handled, removed the CALL
+                        delete this.callReg[id];
                     }
                 }
             });
@@ -107,8 +111,8 @@ class ChargePoint {
             const msgTypeId = 2;
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
-            
-            console.log('Sending', msg);
+
+            console.log('>> Sending:', msg);
 
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
@@ -146,9 +150,18 @@ class ChargePoint {
             // First StartTransaction
             // Then only start charging session
             this.send('StartTransaction', {
-                
-            }).then(msg => sess.startCharging(onEnd))
-            .catch(err => console.error(err));
+                connectorId: 1,
+                idTag: sess.uid,
+                meterStart: 0,
+                timestamp: new Date,
+            }).then(msg => {
+                var payload = msg[2];
+                // Setting transactionId
+                sess.txId = payload.transactionId;
+
+                // Start the charging
+                sess.startCharging(onEnd);
+            }).catch(err => console.error(err));
 
             return sess;
         } else {
@@ -161,9 +174,14 @@ class ChargePoint {
         return (sess) => {
             // First StopTransaction
             // and then start the next transaction
-            this.send('StopTransaction', {}).then(msg => {
+            this.send('StopTransaction', {
+                idTag: sess.uid,
+                meterStop: sess.energy * 1000,
+                timestamp: new Date,
+                transactionId: sess.txId,
+            }).then(msg => {
                 if (this.uids[++i]) {
-                    this.charge(uids[i], this.onSessionEnd(i));
+                    this.charge(this.uids[i], this.onSessionEnd(i));
                 }
             }).catch(err => console.error(err));
         }
