@@ -25,3 +25,10 @@ body {
     display: inline-block;
     cursor: default;
 }
+#console{
+    height: 400px;
+    background-color: black;
+    color: white; 
+    overflow: auto;
+    padding: 5px;
+}

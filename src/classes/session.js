@@ -24,6 +24,24 @@ class Session {
         this.txId = null;
         // Every session is invalid unless accepted
         this.status = 'Invalid';
+
+        // An instance of Socket.io io()
+        this._io = null;
+    }
+
+    get io() {
+        if (!this._io) {
+            throw new Error('Socket io instance not set yet');
+        }
+        return this._io;
+    }
+    set io(io) {
+        this._io = io;
+
+        // Setup
+        io.on('connection', socket => {
+            console.log(`Socket.io connection established`);
+        });
     }
 
     // Time elapsed in minutes
@@ -40,10 +58,13 @@ class Session {
             this.worker = null;
         }
 
-        console.log(`Charging UID #${this.uid}`);
+        this.io.emit('message', `Charging UID #${this.uid}`);
         this.worker = fork(workerScript);
         this.worker.send({ id: this.id, stopAfter: this.duration });
         this.worker.on('message', (msg) => {
+            if (msg.message) {
+                this.io.emit('message', msg.message);
+            }
             if (msg.stop) {
                 this.stop = new Date;
                 if (typeof onEnd == 'function') {

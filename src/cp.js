@@ -1,5 +1,6 @@
 const express = require('express');
 const csv = require('csv-parse');
+
 const router = express.Router();
 module.exports = router;
 
@@ -22,9 +23,8 @@ router.post('/start', function (req, res) {
 router.post('/heartbeat', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    res.json(req.cp.send('Heartbeat').then(msg => console.log(msg)));
+    res.json(req.cp.send('Heartbeat').then(msg => req.io.emit('message', msg)));
 });
-
 
 router.post('/uid-upload', function (req, res) {
     if (!req.files.uids) {
@@ -44,6 +44,8 @@ router.post('/uid-upload', function (req, res) {
         res.redirect(`/cp/${req.cp.serialno}`);
     });
 });
+
+/////////////////////////////////////////////////////////////////////
 
 // Source: https://stackoverflow.com/a/17428705/9990365
 function transpose(array = [[]]) {

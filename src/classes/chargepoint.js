@@ -35,6 +35,24 @@ class ChargePoint {
                 }
             }
         }
+
+        // An instance of Socket.io io()
+        this._io = null;
+    }
+
+    get io() {
+        if (!this._io) {
+            throw new Error('Socket io instance not set yet');
+        }
+        return this._io;
+    }
+    set io(io) {
+        this._io = io;
+
+        // Setup
+        io.on('connection', socket => {
+            console.log(`Socket.io connection established`);
+        });
     }
 
     save() {
@@ -64,22 +82,22 @@ class ChargePoint {
         });
 
         this.client.on('connectFailed', function (error) {
-            console.log('Connection Error: ' + error.toString());
+            this.io.emit('message', 'Connection Error: ' + error.toString());
         });
 
         this.client.on('connect', connection => {
-            console.log(`CP #${this.serialno} has successfuly connected to the backend`);
+            this.io.emit('message', `CP #${this.serialno} has successfuly connected to the backend`);
 
             this.connection = connection;
 
             connection.on('error', function (error) {
-                console.log("Connection Error: " + error.toString());
+                this.io.emit('message', "Connection Error: " + error.toString());
             });
             connection.on('close', function () {
-                console.log('echo-protocol Connection Closed');
+                this.io.emit('message', 'echo-protocol Connection Closed');
             });
             connection.on('message', (message) => {
-                console.log('<< Received:', message.utf8Data);
+                this.io.emit('message', '<< Received:' + message.utf8Data);
 
                 const msg = JSON.parse(message.utf8Data);
                 const type = msg[0];
@@ -112,7 +130,7 @@ class ChargePoint {
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
 
-            console.log('>> Sending:', msg);
+            this.io.emit('message', '>> Sending:' + msg);
 
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
@@ -134,7 +152,7 @@ class ChargePoint {
     }
 
     start() {
-        console.log('Starting charge....');
+        this.io.emit('message', 'Starting charge....');
 
         if (this.uids.length <= 0) {
             throw new Error('No driver UIDs added to start charging');
@@ -147,6 +165,10 @@ class ChargePoint {
         if (this.uids.includes(uid)) {
             var sess = new Session(uid);
             this.sessions.push(sess);
+
+            // Set socket.io io()
+            sess.io = this.io;
+
             // First StartTransaction
             // Then only start charging session
             this.send('StartTransaction', {
@@ -195,7 +217,7 @@ class ChargePoint {
                 }).catch(err => console.error(err));
             }
             else {
-                console.log('Skipping Transaction since the token was not accepted');
+                this.io.emit('message', 'Skipping Transaction since the token was not accepted');
                 if (this.uids[i]) {
                     this.charge(this.uids[i], this.onSessionEnd(i));
                 }

@@ -3,17 +3,21 @@ const express = require('express');
 const helmet = require('helmet');
 const fileUpload = require('express-fileupload');
 const ChargePoint = require('./classes/chargepoint');
-const cp = require('./cp');
+const socket = require('./socket');
 
 // Express housekeeping
 const port = process.env.PORT || 4300;
 const app = express();
-app.listen(port, () => console.log(`App listening on port ${port}...`));
+const httpServer = app.listen(port, () => console.log(`App listening on port ${port}...`));
 app.set('view engine', 'pug');
 app.set('views', './src/views');
 app.use(helmet());
 app.use('/static', express.static('./src/static'));
 app.use(fileUpload());
+
+// Setup socket.io
+socket.setup(httpServer);
+const io = socket.io();
 
 /* Structure of Charge point storage
 {
@@ -45,7 +49,17 @@ app.use('/cp/:serialno', async function (req, res, next) {
     }
 
     next();
-}, cp);
+}, function (req, res, next) {
+    // Create a namespace if not exists
+    if (!socket.namespaces[req.serialno]) {
+        socket.namespaces[req.serialno] = io.of(`/${req.serialno}`);
+    } 
+
+    // Set it to req and give it to cp as well
+    req.cp.io = req.io = socket.namespaces[req.serialno];
+
+    next();
+}, require('./cp'));
 
 // Finally, the 404 handler
 app.all('*', function (req, res) {
