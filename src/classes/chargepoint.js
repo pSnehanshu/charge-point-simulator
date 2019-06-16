@@ -124,7 +124,7 @@ class ChargePoint {
     send(action = 'Heartbeat', payload = {}) {
         return new Promise((resolve, reject) => {
             if (!this.connection) {
-                return reject('Connection with the backend has not yet been established. Please wait...');
+                return reject('Connection with the backend has not yet been established.\nPlease connect to the backend first.');
             }
             const msgTypeId = 2;
             const uniqueId = 'msg_' + shortid.generate();
@@ -155,7 +155,9 @@ class ChargePoint {
         this.io.emit('message', 'Starting charge....');
 
         if (this.uids.length <= 0) {
-            throw new Error('No driver UIDs added to start charging');
+            let errMSg = 'No driver UIDs added to start charging';
+            this.io.emit('err', errMSg);
+            throw new Error(errMSg);
         }
         var i = 0;
         this.charge(this.uids[i], this.onSessionEnd(i));
@@ -190,11 +192,13 @@ class ChargePoint {
                     // End session
                     onEnd(sess);
                 }
-            }).catch(err => console.error(err));
+            }).catch(err => this.io.emit('err', err));
 
             return sess;
         } else {
-            throw new Error(`The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`);
+            let errMsg = `The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`;
+            this.io.emit('err', errMsg);
+            throw new Error(errMsg);
         }
     }
 
@@ -214,7 +218,7 @@ class ChargePoint {
                     if (this.uids[i]) {
                         this.charge(this.uids[i], this.onSessionEnd(i));
                     }
-                }).catch(err => console.error(err));
+                }).catch(err => this.io.emit('err', err));
             }
             else {
                 this.io.emit('message', 'Skipping Transaction since the token was not accepted');

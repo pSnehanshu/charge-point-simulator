@@ -26,6 +26,13 @@ socket.on('message', function (msg) {
     if ($('#autoscroll').is(':checked')) updateScroll('console');
 });
 
+socket.on('err', function (msg) {
+    $('#console').append(
+        $('<pre>').addClass('w3-text-red').text(msg)
+    );
+    if ($('#autoscroll').is(':checked')) updateScroll('console');
+});
+
 function updateScroll(id){
     var element = document.getElementById(id);
     element.scrollTop = element.scrollHeight;
