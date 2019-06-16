@@ -7,34 +7,31 @@ block content
     script const serialno = '#{serialno}';
     h2 CP ##{serialno}
 
-    .w3-row
-        .w3-col.s12.m6.l6
-            fieldset
-                legend Actions
-                button.w3-btn.w3-border.w3-ripple#act-connect Connect to backend
-                button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
-                button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
-                button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging
-                
-        .w3-col.s12.m6.l6
-            fieldset
-                legend Driver UIDs
-                .w3-border.w3-padding
-                    form(action=`/cp/${serialno}/uid-upload`, method="post", enctype="multipart/form-data")
-                        label(for="uid-upload") Upload Driver UID.csv file
-                        input#uid-upload.w3-margin-left.w3-border(type="file", name="uids")
-                        button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
-                .w3-panel
-                    each uid in uids
-                        .w3-border.w3-border-white.w3-hover-border-grey.w3-padding.uid-block UID ##{uid}
-            
+    fieldset.w3-margin-top
+        legend Actions
+        button.w3-btn.w3-border.w3-ripple#act-connect Connect to backend
+        button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
+        button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
+        button.w3-btn.w3-border.w3-ripple#act-startautocharge Start Auto-charging            
 
-    fieldset
-        legend Console
+    fieldset.w3-margin-top
+        legend Console 
         #console
-        label
+        label.w3-margin
             input#autoscroll(type="checkbox", checked)
-            | Auto-scroll
+            |  Auto-scroll
+        button#clsbtn.w3-btn.w3-ripple.w3-border.w3-margin clear
+
+    fieldset.w3-margin-top
+        legend Driver UIDs
+        .w3-border.w3-padding
+            form(action=`/cp/${serialno}/uid-upload`, method="post", enctype="multipart/form-data")
+                label(for="uid-upload") Upload Driver UID.csv file
+                input#uid-upload.w3-margin-left.w3-border(type="file", name="uids")
+                button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
+        .w3-panel
+            each uid in uids
+                .w3-border.w3-border-white.w3-hover-border-grey.w3-padding.uid-block UID ##{uid}
             
     script(src="/static/socket.io.js")
     script(src="/static/cp.js")

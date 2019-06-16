@@ -16,6 +16,10 @@ $('#act-connect').click(function (e) {
         //alert('Success');
     });
 });
+$('#clsbtn').click(function (e) {
+    e.preventDefault();
+    $('#console').html('');
+});
 
 // Socket.io
 const socket = io(`/${serialno}`);
