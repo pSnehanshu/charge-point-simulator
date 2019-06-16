@@ -81,8 +81,8 @@ class ChargePoint {
             Authorization: `Basic ${basicAuth}`,
         });
 
-        this.client.on('connectFailed', function (error) {
-            this.io.emit('message', 'Connection Error: ' + error.toString());
+        this.client.on('connectFailed', (error) => {
+            this.io.emit('err', 'Connection Error: ' + error.toString());
         });
 
         this.client.on('connect', connection => {
@@ -90,10 +90,10 @@ class ChargePoint {
 
             this.connection = connection;
 
-            connection.on('error', function (error) {
-                this.io.emit('message', "Connection Error: " + error.toString());
+            connection.on('error', (error) => {
+                this.io.emit('err', "Connection Error: " + error.toString());
             });
-            connection.on('close', function () {
+            connection.on('close', () => {
                 this.io.emit('message', 'echo-protocol Connection Closed');
             });
             connection.on('message', (message) => {
