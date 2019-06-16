@@ -22,6 +22,8 @@ class Session {
 
         // Transaction ID to be supplied by Backend
         this.txId = null;
+        // Every session is invalid unless accepted
+        this.status = 'Invalid';
     }
 
     // Time elapsed in minutes

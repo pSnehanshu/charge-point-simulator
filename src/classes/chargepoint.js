@@ -159,8 +159,15 @@ class ChargePoint {
                 // Setting transactionId
                 sess.txId = payload.transactionId;
 
-                // Start the charging
-                sess.startCharging(onEnd);
+                // Checking if token was accepted
+                if (payload.idTagInfo.status == 'Accepted') {
+                    // Start the charging
+                    sess.status = 'Accepted';
+                    sess.startCharging(onEnd);
+                } else {
+                    // End session
+                    onEnd(sess);
+                }
             }).catch(err => console.error(err));
 
             return sess;
@@ -172,18 +179,27 @@ class ChargePoint {
     // A helper function that helps to loop charging session one after another
     onSessionEnd(i) {
         return (sess) => {
-            // First StopTransaction
-            // and then start the next transaction
-            this.send('StopTransaction', {
-                idTag: sess.uid,
-                meterStop: sess.energy * 1000,
-                timestamp: new Date,
-                transactionId: sess.txId,
-            }).then(msg => {
-                if (this.uids[++i]) {
+            i++;
+            if (sess.status == 'Accepted') {
+                // First StopTransaction
+                // and then start the next transaction
+                this.send('StopTransaction', {
+                    idTag: sess.uid,
+                    meterStop: sess.energy * 1000,
+                    timestamp: new Date,
+                    transactionId: sess.txId,
+                }).then(msg => {
+                    if (this.uids[i]) {
+                        this.charge(this.uids[i], this.onSessionEnd(i));
+                    }
+                }).catch(err => console.error(err));
+            }
+            else {
+                console.log('Skipping Transaction since the token was not accepted');
+                if (this.uids[i]) {
                     this.charge(this.uids[i], this.onSessionEnd(i));
                 }
-            }).catch(err => console.error(err));
+            }
         }
     }
 }
