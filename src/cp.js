@@ -11,19 +11,22 @@ router.get('/', async function (req, res) {
 router.post('/connect', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    res.json(req.cp.connect());
+    req.cp.connect();
+    res.end();
 });
 
 router.post('/start', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    res.json(req.cp.start());
+    req.cp.start();
+    res.end();
 });
 
 router.post('/heartbeat', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    res.json(req.cp.send('Heartbeat').then(msg => req.io.emit('message', msg)));
+    req.cp.send('Heartbeat').then(msg => req.io.emit('message', 'Heartbeat successful'));
+    res.end();
 });
 
 router.post('/uid-upload', function (req, res) {

@@ -13,7 +13,7 @@ class Session {
         // Params
         this.energy = params.energy || 5;// in kWh (randomly between 5 to 60)
         this.power = params.power || 10.6; // in kW (randomly between 3.7 and 11)
-        this.duration = Math.ceil(this.energy * 60 / this.power); // in minutes
+        this.duration = .3//Math.ceil(this.energy * 60 / this.power); // in minutes
         this.start = params.start || new Date;
         this.stop = null;
 
