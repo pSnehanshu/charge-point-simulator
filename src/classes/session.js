@@ -7,7 +7,7 @@ const workerScript = path.join(__dirname, '../', 'sessionWorker.js');
 class Session {
     constructor(uid, params = {}) {
         // Generate random session id
-        this.id = shortid.generate();
+        this.id = 'sess_' + shortid.generate();
         this.uid = uid;
 
         // Params
