@@ -38,6 +38,9 @@ class ChargePoint {
 
         // An instance of Socket.io io()
         this._io = null;
+
+        // Whether the cp has been accepted by the beackend. Can be set by sending BootNotification
+        this.accepted = false;
     }
 
     get io() {
@@ -126,6 +129,9 @@ class ChargePoint {
             if (!this.connection) {
                 return reject('Connection with the backend has not yet been established.\nPlease connect to the backend first.');
             }
+            if (!this.accepted && action != 'BootNotification') {
+                return reject('Charge-point has not yet been accepted by the backend.\nPlease send BootNotification first and then retry.');
+            }
             const msgTypeId = 2;
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
@@ -151,8 +157,29 @@ class ChargePoint {
         this.callReg[id].push(cb);
     }
 
+    boot() {
+        this.io.emit('message', 'Sending BootNotification...');
+        this.send('BootNotification', {
+            chargePointModel: 'HOMEADVANCED',
+            chargePointVendor: 'eNovates',
+        }).then(msg => {
+            var payload = msg[2];
+            var status = payload.status;
+
+            if (status == 'Accepted') {
+                this.accepted = true;
+            }
+            else if (status == 'Rejected') {
+                this.accepted = false;
+                var retry = 10000;
+                this.io.emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
+                setTimeout(() => this.boot(), retry);
+            }
+        }).catch(err => this.io.emit('err', err));
+    }
+
     start() {
-        this.io.emit('message', 'Starting charge....');
+        this.io.emit('message', 'Starting auto-charge....');
 
         if (this.uids.length <= 0) {
             let errMSg = 'No driver UIDs added to start charging';

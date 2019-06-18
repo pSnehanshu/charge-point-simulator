@@ -31,6 +31,11 @@ router.post('/heartbeat', function (req, res) {
     res.end();
 });
 
+router.post('/boot', function (req, res) {
+    req.cp.boot();
+    res.end();
+});
+
 router.post('/uid-upload', function (req, res) {
     if (!req.files.uids) {
         return res.sendStatus(400);
