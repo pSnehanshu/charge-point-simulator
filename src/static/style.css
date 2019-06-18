@@ -32,3 +32,7 @@ body {
     overflow: auto;
     padding: 5px;
 }
+.cplink{
+    display: inline-block;
+    margin-left: 20px;
+}

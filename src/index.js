@@ -28,7 +28,9 @@ global.chargepoints = {};
 
 // Actual routes
 app.get('/', function (req, res) {
-    res.render('index');
+    res.render('index', {
+        active: global.chargepoints
+    });
 });
 
 app.get('/cp', function (req, res) {
