@@ -27,10 +27,21 @@ socket.on('message', function (msg) {
     );
     if ($('#autoscroll').is(':checked')) updateScroll('console');
 });
-
+socket.on('success', function (msg) {
+    $('#console').append(
+        $('<pre>').addClass('w3-text-green').text(msg)
+    );
+    if ($('#autoscroll').is(':checked')) updateScroll('console');
+});
 socket.on('err', function (msg) {
     $('#console').append(
         $('<pre>').addClass('w3-text-red').text(msg)
+    );
+    if ($('#autoscroll').is(':checked')) updateScroll('console');
+});
+socket.on('unimportant', function (msg) {
+    $('#console').append(
+        $('<pre>').addClass('w3-text-grey').text(msg)
     );
     if ($('#autoscroll').is(':checked')) updateScroll('console');
 });

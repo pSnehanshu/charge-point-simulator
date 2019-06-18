@@ -26,7 +26,7 @@ router.post('/heartbeat', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
     req.cp.send('Heartbeat')
-        .then(msg => req.io.emit('message', 'Heartbeat successful'))
+        .then(msg => req.io.emit('success', 'Heartbeat successful'))
         .catch(err => req.io.emit('err', err));
     res.end();
 });

@@ -91,7 +91,7 @@ class ChargePoint {
         });
 
         this.client.on('connect', connection => {
-            this.io.emit('message', `CP #${this.serialno} has successfuly connected to the backend`);
+            this.io.emit('success', `CP #${this.serialno} has successfuly connected to the backend`);
 
             this.connection = connection;
 
@@ -102,7 +102,7 @@ class ChargePoint {
                 this.io.emit('message', 'echo-protocol Connection Closed');
             });
             connection.on('message', (message) => {
-                this.io.emit('message', '<< Received:' + message.utf8Data);
+                this.io.emit('unimportant', '<< Received:' + message.utf8Data);
 
                 const msg = JSON.parse(message.utf8Data);
                 const type = msg[0];
@@ -138,7 +138,7 @@ class ChargePoint {
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
 
-            this.io.emit('message', '>> Sending:' + msg);
+            this.io.emit('unimportant', '>> Sending:' + msg);
 
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
@@ -170,6 +170,7 @@ class ChargePoint {
 
             if (status == 'Accepted') {
                 this.accepted = true;
+                this.io.emit('success', 'Charge point has been accepted');
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
@@ -238,12 +239,14 @@ class ChargePoint {
             if (sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction
+                this.io.emit('message', `Trying to stop charging UID #${sess.uid}...`);
                 this.send('StopTransaction', {
                     idTag: sess.uid,
                     meterStop: sess.energy * 1000,
                     timestamp: new Date,
                     transactionId: sess.txId,
                 }).then(msg => {
+                    this.io.emit('success', `UID #${sess.uid} has stopped charging`);
                     if (this.uids[i]) {
                         this.charge(this.uids[i], this.onSessionEnd(i));
                     }
