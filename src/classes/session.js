@@ -58,12 +58,12 @@ class Session {
             this.worker = null;
         }
 
-        this.io.emit('success', `Charging UID #${this.uid}`);
+        this.io.cps_emit('success', `Charging UID #${this.uid}`);
         this.worker = fork(workerScript);
         this.worker.send({ id: this.id, stopAfter: this.duration });
         this.worker.on('message', (msg) => {
             if (msg.message) {
-                this.io.emit('message', msg.message);
+                this.io.cps_emit('message', msg.message);
             }
             if (msg.stop) {
                 this.stop = new Date;

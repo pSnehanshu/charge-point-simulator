@@ -8,6 +8,10 @@ router.get('/', async function (req, res) {
     res.render('cp', req.cp);
 });
 
+router.get('/msglog', function (req, res) {
+    res.json(req.io.cps_msglog);
+});
+
 router.post('/connect', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
@@ -25,10 +29,10 @@ router.post('/start', function (req, res) {
 router.post('/heartbeat', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    req.io.emit('message', 'Sending heartbeat...');
+    req.io.cps_emit('message', 'Sending heartbeat...');
     req.cp.send('Heartbeat')
-        .then(msg => req.io.emit('success', 'Heartbeat successful'))
-        .catch(err => req.io.emit('err', err));
+        .then(msg => req.io.cps_emit('success', 'Heartbeat successful'))
+        .catch(err => req.io.cps_emit('err', err));
     res.end();
 });
 

@@ -75,7 +75,7 @@ class ChargePoint {
     }
 
     connect() {
-        this.io.emit('message', 'Trying to connect...');
+        this.io.cps_emit('message', 'Trying to connect...');
 
         var key = Buffer.from(process.env.KEY, 'hex').toString();
         var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
@@ -87,22 +87,22 @@ class ChargePoint {
         });
 
         this.client.on('connectFailed', (error) => {
-            this.io.emit('err', 'Connection Error: ' + error.toString());
+            this.io.cps_emit('err', 'Connection Error: ' + error.toString());
         });
 
         this.client.on('connect', connection => {
-            this.io.emit('success', `CP #${this.serialno} has successfuly connected to the backend`);
+            this.io.cps_emit('success', `CP #${this.serialno} has successfuly connected to the backend`);
 
             this.connection = connection;
 
             connection.on('error', (error) => {
-                this.io.emit('err', "Connection Error: " + error.toString());
+                this.io.cps_emit('err', "Connection Error: " + error.toString());
             });
             connection.on('close', () => {
-                this.io.emit('message', 'echo-protocol Connection Closed');
+                this.io.cps_emit('message', 'echo-protocol Connection Closed');
             });
             connection.on('message', (message) => {
-                this.io.emit('unimportant', '<< Received:' + message.utf8Data);
+                this.io.cps_emit('unimportant', '<< Received:' + message.utf8Data);
 
                 const msg = JSON.parse(message.utf8Data);
                 const type = msg[0];
@@ -138,7 +138,7 @@ class ChargePoint {
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
 
-            this.io.emit('unimportant', '>> Sending:' + msg);
+            this.io.cps_emit('unimportant', '>> Sending:' + msg);
 
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
@@ -160,7 +160,7 @@ class ChargePoint {
     }
 
     boot() {
-        this.io.emit('message', 'Sending BootNotification...');
+        this.io.cps_emit('message', 'Sending BootNotification...');
         this.send('BootNotification', {
             chargePointModel: 'HOMEADVANCED',
             chargePointVendor: 'eNovates',
@@ -170,23 +170,23 @@ class ChargePoint {
 
             if (status == 'Accepted') {
                 this.accepted = true;
-                this.io.emit('success', 'Charge point has been accepted');
+                this.io.cps_emit('success', 'Charge point has been accepted');
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
                 var retry = 10000;
-                this.io.emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
+                this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
                 setTimeout(() => this.boot(), retry);
             }
-        }).catch(err => this.io.emit('err', err));
+        }).catch(err => this.io.cps_emit('err', err));
     }
 
     start() {
-        this.io.emit('message', 'Starting auto-charge....');
+        this.io.cps_emit('message', 'Starting auto-charge....');
 
         if (this.uids.length <= 0) {
             let errMSg = 'No driver UIDs added to start charging';
-            this.io.emit('err', errMSg);
+            this.io.cps_emit('err', errMSg);
             throw new Error(errMSg);
         }
         var i = 0;
@@ -220,15 +220,15 @@ class ChargePoint {
                     sess.startCharging(onEnd);
                 } else {
                     // End session
-                    this.io.emit('err', `UID #${uid} wasn't accepted by backend. Skipping...`);
+                    this.io.cps_emit('err', `UID #${uid} wasn't accepted by backend. Skipping...`);
                     onEnd(sess);
                 }
-            }).catch(err => this.io.emit('err', err));
+            }).catch(err => this.io.cps_emit('err', err));
 
             return sess;
         } else {
             let errMsg = `The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`;
-            this.io.emit('err', errMsg);
+            this.io.cps_emit('err', errMsg);
             throw new Error(errMsg);
         }
     }
@@ -240,18 +240,18 @@ class ChargePoint {
             if (sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction
-                this.io.emit('message', `Trying to stop charging UID #${sess.uid}...`);
+                this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
                 this.send('StopTransaction', {
                     idTag: sess.uid,
                     meterStop: sess.energy * 1000,
                     timestamp: new Date,
                     transactionId: sess.txId,
                 }).then(msg => {
-                    this.io.emit('success', `UID #${sess.uid} has stopped charging`);
+                    this.io.cps_emit('success', `UID #${sess.uid} has stopped charging`);
                     if (this.uids[i]) {
                         this.charge(this.uids[i], this.onSessionEnd(i));
                     }
-                }).catch(err => this.io.emit('err', err));
+                }).catch(err => this.io.cps_emit('err', err));
             }
             else {
                 if (this.uids[i]) {
