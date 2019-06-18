@@ -13,7 +13,8 @@ html(lang="en")
         #container
             #header.w3-black.w3-row
                 .w3-col.s12.m6.l4
-                    h1 Charge Point Simulator
+                    h1
+                        a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Charge Point Simulator
                 .w3-col.s12.m6.l8
                     .w3-right.w3-margin
                         form(action="/cp", method="get")
