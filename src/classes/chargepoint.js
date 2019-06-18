@@ -220,6 +220,7 @@ class ChargePoint {
                     sess.startCharging(onEnd);
                 } else {
                     // End session
+                    this.io.emit('err', `UID #${uid} wasn't accepted by backend. Skipping...`);
                     onEnd(sess);
                 }
             }).catch(err => this.io.emit('err', err));
@@ -253,7 +254,6 @@ class ChargePoint {
                 }).catch(err => this.io.emit('err', err));
             }
             else {
-                this.io.emit('message', 'Skipping Transaction since the token was not accepted');
                 if (this.uids[i]) {
                     this.charge(this.uids[i], this.onSessionEnd(i));
                 }
