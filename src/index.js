@@ -58,7 +58,7 @@ app.use('/cp/:serialno', async function (req, res, next) {
         socket.namespaces[req.serialno].cps_msglog = [];
         socket.namespaces[req.serialno].cps_emit = function (event, message) {
             // First record the message
-            this.cps_msglog.push({ event, message, timestamp: Date.now() });
+            this.cps_msglog.push({ type: event, message, timestamp: Date.now() });
             this.emit(event, message);
         }.bind(socket.namespaces[req.serialno]);
     } 

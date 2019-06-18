@@ -1,3 +1,18 @@
+// Load existing log messages
+$(function () {
+    var myconsole = $('#console');
+    myconsole.append(
+        $('<pre>').addClass('w3-text-white').text('Loading console...')
+    );
+    $.get(`/cp/${serialno}/msglog`, function (data) {
+        myconsole.html('');
+        data.forEach(msg => {
+            addMsg(msg.message, msg.type, false);
+        });
+        updateScroll('console');
+    });
+});
+
 $('#act-heartbeat').click(function (e) {
     e.preventDefault();
     action(serialno, 'heartbeat');
@@ -22,35 +37,21 @@ $('#clsbtn').click(function (e) {
 // Socket.io /////////////////////////////////
 const socket = io(`/${serialno}`);
 socket.on('message', function (msg) {
-    $('#console').append(
-        $('<pre>').text(msg)
-    );
-    if ($('#autoscroll').is(':checked')) updateScroll('console');
+    addMsg(msg, 'message');
 });
 socket.on('success', function (msg) {
-    $('#console').append(
-        $('<pre>').addClass('w3-text-green').text(msg)
-    );
-    if ($('#autoscroll').is(':checked')) updateScroll('console');
+    addMsg(msg, 'success');
 });
 socket.on('err', function (msg) {
-    $('#console').append(
-        $('<pre>').addClass('w3-text-red').text(msg)
-    );
-    if ($('#autoscroll').is(':checked')) updateScroll('console');
+    addMsg(msg, 'err');
 });
 socket.on('unimportant', function (msg) {
-    if (!$('#unimportant-toggle').is(':checked')) return;
-    
-    $('#console').append(
-        $('<pre>').addClass('w3-text-grey').text(msg)
-    );
-    if ($('#autoscroll').is(':checked')) updateScroll('console');
+    addMsg(msg, 'unimportant');
 });
 
 ////////////////////////////////////////////
 function action(serial, act, cb) {
-    $.post(`/cp/${serial}/${act}`, function(data, status) {
+    $.post(`/cp/${serial}/${act}`, function (data, status) {
         if (typeof cb == 'function') cb(null, data, status);
         else console.log('Success!');
     }).fail(function () {
@@ -59,7 +60,40 @@ function action(serial, act, cb) {
     })
 }
 
-function updateScroll(id){
+function updateScroll(id) {
     var element = document.getElementById(id);
     element.scrollTop = element.scrollHeight;
+}
+function addMsg(msg, type = 'message', scrollDown = true) {
+    var myconsole = $('#console');
+    var pre = $('<pre>');
+
+    switch (type) {
+        case 'message':
+            myconsole.append(
+                pre.addClass('w3-text-white').text(msg)
+            );
+            break;
+        case 'success':
+            myconsole.append(
+                pre.addClass('w3-text-green').text(msg)
+            );
+            break;
+        case 'unimportant':
+            if (!$('#unimportant-toggle').is(':checked')) return;
+
+            myconsole.append(
+                pre.addClass('w3-text-grey').text(msg)
+            );
+            break;
+        case 'err':
+            myconsole.append(
+                pre.addClass('w3-text-red').text(msg)
+            );
+            break;
+    }
+
+    if (scrollDown) {
+        if ($('#autoscroll').is(':checked')) updateScroll('console');
+    }
 }
