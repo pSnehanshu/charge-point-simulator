@@ -75,6 +75,8 @@ class ChargePoint {
     }
 
     connect() {
+        this.io.emit('message', 'Trying to connect...');
+
         var key = Buffer.from(process.env.KEY, 'hex').toString();
         var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
         var url = `${process.env.BACKENDURL}/${this.serialno}`
