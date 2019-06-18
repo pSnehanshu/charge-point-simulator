@@ -1,27 +1,25 @@
 $('#act-heartbeat').click(function (e) {
     e.preventDefault();
-    $.post(`/cp/${serialno}/heartbeat`, function(data, status) {
-        //alert('Success');
-    });
+    action(serialno, 'heartbeat');
+});
+$('#act-boot').click(function (e) {
+    e.preventDefault();
+    action(serialno, 'boot');
 });
 $('#act-startautocharge').click(function (e) {
     e.preventDefault();
-    $.post(`/cp/${serialno}/start`, function(data, status) {
-        //alert('Success');
-    });
+    action(serialno, 'start');
 });
 $('#act-connect').click(function (e) {
     e.preventDefault();
-    $.post(`/cp/${serialno}/connect`, function(data, status) {
-        //alert('Success');
-    });
+    action(serialno, 'connect');
 });
 $('#clsbtn').click(function (e) {
     e.preventDefault();
     $('#console').html('');
 });
 
-// Socket.io
+// Socket.io /////////////////////////////////
 const socket = io(`/${serialno}`);
 socket.on('message', function (msg) {
     $('#console').append(
@@ -36,6 +34,17 @@ socket.on('err', function (msg) {
     );
     if ($('#autoscroll').is(':checked')) updateScroll('console');
 });
+
+////////////////////////////////////////////
+function action(serial, act, cb) {
+    $.post(`/cp/${serial}/${act}`, function(data, status) {
+        if (typeof cb == 'function') cb(null, data, status);
+        else console.log('Success!');
+    }).fail(function () {
+        if (typeof cb == 'function') cb('Failed to do the job');
+        else alert('Failed to do the job');
+    })
+}
 
 function updateScroll(id){
     var element = document.getElementById(id);
