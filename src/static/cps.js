@@ -40,6 +40,8 @@ socket.on('err', function (msg) {
     if ($('#autoscroll').is(':checked')) updateScroll('console');
 });
 socket.on('unimportant', function (msg) {
+    if (!$('#unimportant-toggle').is(':checked')) return;
+    
     $('#console').append(
         $('<pre>').addClass('w3-text-grey').text(msg)
     );
