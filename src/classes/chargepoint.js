@@ -7,7 +7,7 @@ const cpfileroot = './charge-points/';
 
 class ChargePoint {
     constructor(cpfile = {}) {
-        /* Structure of Call Register
+        /* Structure of CallResult Handlers
             {
                 <UniqueId>: [<cb>, ...],
                 .
@@ -15,7 +15,17 @@ class ChargePoint {
                 .
             }
         */
-        this.callReg = {};
+        this.callResultHandlers = {};
+
+        /* Structure of CallHandlers
+            {
+                <Action>: [<cb>, ...],
+                .
+                .
+                .
+            }
+        */
+        this.callHandlers = {};
 
         this.uids = [];
         this.sessions = [];
@@ -112,17 +122,24 @@ class ChargePoint {
                 const id = msg[1];
 
                 if (type == 2) { // CALL
-                    // Handle CALL
+                    const action = msg[2];
+                    // Check if handlers are registered for the call
+                    if (this.callHandlers[action]) {
+                        if (!Array.isArray(this.callHandlers[action])) {
+                            this.callHandlers[action] = [this.callHandlers[action]];
+                        }
+                        this.callHandlers[action].forEach(cb => typeof cb == 'function' && cb(msg));
+                    }
                 }
                 else {
                     // Check if callbacks are registered for the response
-                    if (this.callReg[id]) {
-                        if (!Array.isArray(this.callReg[id])) {
-                            this.callReg[id] = [this.callReg[id]];
+                    if (this.callResultHandlers[id]) {
+                        if (!Array.isArray(this.callResultHandlers[id])) {
+                            this.callResultHandlers[id] = [this.callResultHandlers[id]];
                         }
-                        this.callReg[id].forEach(cb => typeof cb == 'function' && cb(msg));
+                        this.callResultHandlers[id].forEach(cb => typeof cb == 'function' && cb(msg));
                         // After all response handled, removed the CALL
-                        delete this.callReg[id];
+                        delete this.callResultHandlers[id];
                     }
                 }
             });
@@ -148,18 +165,33 @@ class ChargePoint {
         });
     }
 
-    registerCall(id, cb) {
-        // Create entry if new ID
-        if (!this.callReg[id]) {
-            this.callReg[id] = [];
+    // Handle Calls
+    on(action, cb) {
+        // Create action if not previously registered
+        if (!this.callHandlers[action]) {
+            this.callHandlers[action] = [];
         }
         // Check if it is array, if not make it one
-        if (!Array.isArray(this.callReg[id])) {
-            this.callReg[id] = [this.callReg[id]];
+        if (!Array.isArray(this.callHandlers[action])) {
+            this.callHandlers[action] = [this.callHandlers[action]];
         }
 
         // Finally push the callback
-        this.callReg[id].push(cb);
+        this.callHandlers[action].push(cb);
+    }
+
+    registerCall(id, cb) {
+        // Create entry if new ID
+        if (!this.callResultHandlers[id]) {
+            this.callResultHandlers[id] = [];
+        }
+        // Check if it is array, if not make it one
+        if (!Array.isArray(this.callResultHandlers[id])) {
+            this.callResultHandlers[id] = [this.callResultHandlers[id]];
+        }
+
+        // Finally push the callback
+        this.callResultHandlers[id].push(cb);
     }
 
     boot() {
