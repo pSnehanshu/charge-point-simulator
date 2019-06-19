@@ -128,7 +128,7 @@ class ChargePoint {
                         if (!Array.isArray(this.callHandlers[action])) {
                             this.callHandlers[action] = [this.callHandlers[action]];
                         }
-                        this.callHandlers[action].forEach(cb => typeof cb == 'function' && cb(msg));
+                        this.callHandlers[action].forEach(cb => typeof cb == 'function' && cb(msg, this.callRespond(msg)));
                     }
                 }
                 else {
@@ -163,6 +163,28 @@ class ChargePoint {
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
         });
+    }
+
+    callRespond(msg) {
+        const self = this;
+
+        function respond() {
+            this.success = function (payload) {
+                if (!self.connection) {
+                    return self.io.cps_emit('err', 'Connection with the backend has not yet been established.\nPlease connect to the backend first.');
+                }
+
+                var response = JSON.stringify([3, msg[1], payload]);
+                self.io.cps_emit('unimportant', `>> Sending: ${response}`);
+                self.connection.sendUTF(response);
+            }
+
+            this.error = function () {
+
+            }
+        }
+
+        return new respond;
     }
 
     // Handle Calls
