@@ -160,6 +160,7 @@ class ChargePoint {
     }
 
     boot() {
+        var retry = 10000;
         this.io.cps_emit('message', 'Sending BootNotification...');
         this.send('BootNotification', {
             chargePointModel: 'HOMEADVANCED',
@@ -174,11 +175,15 @@ class ChargePoint {
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
-                var retry = 10000;
                 this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
                 setTimeout(() => this.boot(), retry);
             }
-        }).catch(err => this.io.cps_emit('err', err));
+        }).catch(err => {
+            this.io.cps_emit('err', err);
+            this.io.cps_emit('message', 'Retrying to send BootNotification...');
+            this.accepted = false;
+            setTimeout(() => this.boot(), retry);
+        });
     }
 
     start() {
