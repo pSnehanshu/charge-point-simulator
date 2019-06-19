@@ -29,10 +29,7 @@ router.post('/start', function (req, res) {
 router.post('/heartbeat', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    req.io.cps_emit('message', 'Sending heartbeat...');
-    req.cp.send('Heartbeat')
-        .then(msg => req.io.cps_emit('success', 'Heartbeat successful'))
-        .catch(err => req.io.cps_emit('err', err));
+    req.cp.startHeartbeat();
     res.end();
 });
 

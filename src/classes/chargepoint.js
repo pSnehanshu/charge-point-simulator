@@ -41,6 +41,9 @@ class ChargePoint {
 
         // Whether the cp has been accepted by the beackend. Can be set by sending BootNotification
         this.accepted = false;
+
+        // The status of the cp. Available/Occupied
+        this.status = 'Available';
     }
 
     get io() {
@@ -162,6 +165,7 @@ class ChargePoint {
     boot() {
         var retry = 10000;
         this.io.cps_emit('message', 'Sending BootNotification...');
+
         this.send('BootNotification', {
             chargePointModel: 'HOMEADVANCED',
             chargePointVendor: 'eNovates',
@@ -172,6 +176,8 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
+                // Send heartbeats in interval of 5m
+                this.startHeartbeat(5 * 60 * 1000);
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
@@ -183,6 +189,36 @@ class ChargePoint {
             this.io.cps_emit('message', 'Retrying to send BootNotification...');
             this.accepted = false;
             setTimeout(() => this.boot(), retry);
+        });
+    }
+
+    /**
+     * Send heartbeat and possibily continue sending afterwards
+     * @param {Number} resendAfter Miliseconds after which resend another heartbeat request. -1 for no resend.
+     */
+    startHeartbeat(resendAfter = -1) {
+        this.io.cps_emit('message', 'Sending heartbeat...');
+        this.send('Heartbeat')
+            .then(msg => {
+                this.io.cps_emit('success', 'Heartbeat response received');
+                if (resendAfter >= 0) {
+                    setTimeout(() => this.startHeartbeat(resendAfter), resendAfter);
+                }
+            })
+            .catch(err => this.io.cps_emit('err', err));
+    }
+
+    setStatus(status) {
+        return new Promise((resolve, reject) => {
+            this.send('StatusNotification', {
+                connectorId: 0,
+                errorCode: 'NoError',
+                status,
+            }).then(msg => {
+                this.status = status;
+                this.io.cps_emit('success', `CP status has been set to ${this.status}`)
+                resolve();
+            }).catch(err => reject(err));
         });
     }
 
@@ -200,37 +236,50 @@ class ChargePoint {
 
     charge(uid, onEnd) {
         if (this.uids.includes(uid)) {
-            var sess = new Session(uid);
-            this.sessions.push(sess);
+            // If cp isn't available, don't start charging
+            if (this.status != 'Available') {
+                return this.io.cps_emit('err', `Can't charge as charge point status "${this.status}"`);
+            }
 
-            // Set socket.io io()
-            sess.io = this.io;
-
-            // First StartTransaction
-            // Then only start charging session
-            this.send('StartTransaction', {
-                connectorId: 1,
-                idTag: sess.uid,
-                meterStart: 0,
-                timestamp: new Date,
+            // First authorize the UID
+            this.send('Authorize', {
+                idTag: uid,
             }).then(msg => {
                 var payload = msg[2];
-                // Setting transactionId
-                sess.txId = payload.transactionId;
-
                 // Checking if token was accepted
                 if (payload.idTagInfo.status == 'Accepted') {
-                    // Start the charging
-                    sess.status = 'Accepted';
-                    sess.startCharging(onEnd);
-                } else {
-                    // End session
+                    // Change status to occupied
+                    this.setStatus('Occupied').then(() => {
+                        var sess = new Session(uid);
+                        this.sessions.push(sess);
+
+                        // Set socket.io io()
+                        sess.io = this.io;
+
+                        // First StartTransaction
+                        // Then only start charging session
+                        this.send('StartTransaction', {
+                            connectorId: 1,
+                            idTag: sess.uid,
+                            meterStart: 0,
+                            timestamp: new Date,
+                        }).then(msg => {
+                            var payload = msg[2];
+                            // Setting transactionId
+                            sess.txId = payload.transactionId;
+
+                            // Start the charging
+                            sess.status = 'Accepted';
+                            sess.startCharging(onEnd);
+
+                        }).catch(err => this.io.cps_emit('err', err));
+                    }).catch(err => this.io.cps_emit('err', err));
+                }
+                else {
                     this.io.cps_emit('err', `UID #${uid} wasn't accepted by backend. Skipping...`);
-                    onEnd(sess);
+                    onEnd();
                 }
             }).catch(err => this.io.cps_emit('err', err));
-
-            return sess;
         } else {
             let errMsg = `The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`;
             this.io.cps_emit('err', errMsg);
@@ -242,7 +291,7 @@ class ChargePoint {
     onSessionEnd(i) {
         return (sess) => {
             i++;
-            if (sess.status == 'Accepted') {
+            if (sess && sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction
                 this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
@@ -253,9 +302,13 @@ class ChargePoint {
                     transactionId: sess.txId,
                 }).then(msg => {
                     this.io.cps_emit('success', `UID #${sess.uid} has stopped charging`);
-                    if (this.uids[i]) {
-                        this.charge(this.uids[i], this.onSessionEnd(i));
-                    }
+
+                    // Set status to Available
+                    this.setStatus('Available').then(() => {
+                        if (this.uids[i]) {
+                            this.charge(this.uids[i], this.onSessionEnd(i));
+                        }
+                    });
                 }).catch(err => this.io.cps_emit('err', err));
             }
             else {
