@@ -73,6 +73,13 @@ class Session {
             }
         });
     }
+
+    // returns a savable version of the session
+    savable() {
+        return {
+            id: this.id,
+        };
+    }
 };
 
 module.exports = Session;

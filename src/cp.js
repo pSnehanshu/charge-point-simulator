@@ -38,6 +38,11 @@ router.post('/boot', function (req, res) {
     res.end();
 });
 
+router.post('/save', function (req, res) {
+    req.cp.save();
+    res.end();
+});
+
 router.post('/uid-upload', function (req, res) {
     if (!req.files.uids) {
         return res.sendStatus(400);

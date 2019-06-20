@@ -44,6 +44,9 @@ class ChargePoint {
                     });
                 }
             }
+
+            // Temporarily Load the logs as well
+            this.log = cpfile.log;
         }
 
         // An instance of Socket.io io()
@@ -54,6 +57,9 @@ class ChargePoint {
 
         // The status of the cp. Available/Occupied
         this.status = 'Available';
+
+        // Start saving
+        setInterval(() => this.save(), 30000);
     }
 
     get io() {
@@ -65,6 +71,9 @@ class ChargePoint {
     set io(io) {
         this._io = io;
 
+        // If temporary logs exists, set them
+        this._io.cps_msglog = Array.isArray(this.log)? this.log: [];
+
         // Setup
         io.on('connection', socket => {
             console.log(`Socket.io connection established`);
@@ -73,15 +82,18 @@ class ChargePoint {
 
     save() {
         return new Promise((resolve, reject) => {
+            this.io.emit('save', 'saving');
             var data = JSON.stringify({
                 serialno: this.serialno,
                 uids: this.uids,
-                sessions: this.sessions,
-            });
+                sessions: this.sessions.map(s => s.savable()),
+                log: this.io.cps_msglog
+            }, null, 2);
 
             // Write
             fs.writeFile(cpfileroot + this.serialno + '.json', data, (err) => {
                 if (err) return reject(err);
+                this.io.emit('save', 'saved');
                 resolve();
             });
         });

@@ -29,6 +29,10 @@ $('#act-connect').click(function (e) {
     e.preventDefault();
     action(serialno, 'connect');
 });
+$('#save').click(function (e) {
+    e.preventDefault();
+    action(serialno, 'save');
+});
 $('#clsbtn').click(function (e) {
     e.preventDefault();
     $('#console').html('');
@@ -48,7 +52,17 @@ socket.on('err', function (msg) {
 socket.on('unimportant', function (msg) {
     addMsg(msg, 'unimportant');
 });
-
+socket.on('save', function (msg) {
+    var btn = $('#save');
+    if (msg == 'saving') {
+        btn.text('Saving...').prop('disabled', true);
+    } else {
+        setTimeout(() => {
+            btn.text('Saved').addClass('w3-green').prop('disabled', false);
+            setTimeout(() => btn.text('Save').removeClass('w3-green'), 1000);
+        }, 2000);
+    }
+});
 ////////////////////////////////////////////
 function action(serial, act, cb) {
     $.post(`/cp/${serial}/${act}`, function (data, status) {
