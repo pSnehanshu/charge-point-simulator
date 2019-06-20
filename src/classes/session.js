@@ -50,8 +50,8 @@ class Session {
     // Time elapsed in minutes
     get elapsed() {
         var now = new Date;
-        var elapsed = this.start - now;
-        return elapsed / 60000;
+        var elapsed = now - this.start;
+        return Math.floor(elapsed / 60000);
     }
 
     startCharging(onEnd) {
