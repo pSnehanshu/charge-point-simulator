@@ -18,4 +18,18 @@ module.exports = function (cp) {
             status: 'Rejected'
         });
     });
+
+    cp.on('RemoteStopTransaction', function (msg, res) {
+        var payload = msg[3];
+
+        res.success({
+            status: 'Rejected'
+        });
+    });
+
+    cp.on('UnlockConnector', function (msg, res) {
+        res.success({
+            status: 'Rejected'
+        });
+    });
 };
