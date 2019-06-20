@@ -13,7 +13,6 @@ class Session {
         // Params
         this.energy = params.energy || getRandomNumber(5, 60);// in kWh (randomly between 5 to 60)
         this.power = params.power || getRandomNumber(3.7, 11); // in kW (randomly between 3.7 and 11)
-        this.duration = Math.ceil(this.energy * 60 / this.power); // in minutes
         this.start = params.start || new Date;
         this.stop = null;
 
@@ -27,6 +26,10 @@ class Session {
 
         // An instance of Socket.io io()
         this._io = null;
+    }
+
+    get duration() {
+        return Math.ceil(this.energy * 60 / this.power); // in minutes
     }
 
     get io() {
@@ -78,6 +81,12 @@ class Session {
     savable() {
         return {
             id: this.id,
+            energy: this.energy,
+            power: this.power,
+            start: this.start,
+            txId: this.txId,
+            uid: this.uid,
+            elapsed: this.elapsed,
         };
     }
 };
