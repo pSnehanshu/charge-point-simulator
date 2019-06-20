@@ -36,6 +36,7 @@ $('#save').click(function (e) {
 $('#clsbtn').click(function (e) {
     e.preventDefault();
     $('#console').html('');
+    action(serialno, 'clear');
 });
 
 // Socket.io /////////////////////////////////
