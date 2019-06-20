@@ -58,6 +58,9 @@ class ChargePoint {
         // The status of the cp. Available/Occupied
         this.status = 'Available';
 
+        // Setting meter value (wh)
+        this.meterValue = cpfile.meterValue || 0;
+
         // Start saving
         setInterval(() => this.save(), 30000);
     }
@@ -86,6 +89,7 @@ class ChargePoint {
             var data = JSON.stringify({
                 serialno: this.serialno,
                 uids: this.uids,
+                meterValue: this.meterValue,
                 sessions: this.sessions.map(s => typeof s.savable == 'function'? s.savable(): s),
                 log: this.io.cps_msglog
             }, null, 2);
@@ -327,7 +331,7 @@ class ChargePoint {
                         this.send('StartTransaction', {
                             connectorId: 1,
                             idTag: sess.uid,
-                            meterStart: 0,
+                            meterStart: this.meterValue,
                             timestamp: new Date,
                         }).then(msg => {
                             var payload = msg[2];
@@ -361,9 +365,13 @@ class ChargePoint {
                 // First StopTransaction
                 // and then start the next transaction
                 this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
+                
+                // Updating meterValue
+                this.meterValue += sess.energy * 1000;
+
                 this.send('StopTransaction', {
                     idTag: sess.uid,
-                    meterStop: sess.energy * 1000,
+                    meterStop: this.meterValue,
                     timestamp: new Date,
                     transactionId: sess.txId,
                 }).then(msg => {
