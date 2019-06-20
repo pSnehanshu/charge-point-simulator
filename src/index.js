@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const fileUpload = require('express-fileupload');
 const ChargePoint = require('./classes/chargepoint');
 const socket = require('./socket');
+const handleCall = require('./handleCall');
 
 // Express housekeeping
 const port = process.env.PORT || 4300;
@@ -66,6 +67,9 @@ app.use('/cp/:serialno', async function (req, res, next) {
     // Set it to req and give it to cp as well
     req.cp.io = req.io = socket.namespaces[req.serialno];
 
+    next();
+}, function (req, res, next) {
+    handleCall(req.cp)
     next();
 }, require('./cp'));
 
