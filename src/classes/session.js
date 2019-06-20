@@ -29,7 +29,7 @@ class Session {
     }
 
     get duration() {
-        return Math.ceil(this.energy * 60 / this.power); // in minutes
+        return this.energy * 60 / this.power; // in minutes
     }
 
     get io() {
@@ -55,6 +55,9 @@ class Session {
     }
 
     startCharging(onEnd) {
+        // Displaying session details in client
+        this.io.cps_emit('message', JSON.stringify(this.savable(), null, 2));
+
         // Kill existsing worker if exists
         if (this.worker != null) {
             this.worker.kill();

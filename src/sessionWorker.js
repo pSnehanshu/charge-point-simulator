@@ -7,17 +7,16 @@ var timer = null;
 
 process.on('message', function (msg) {
     if (msg.stopAfter) {
-        var stopAfter = msg.stopAfter + 'm';
+        var stopAfterDisplay = msg.stopAfter + 'm';
         if (msg.stopAfter > 60) {
-            stopAfter = Math.ceil(msg.stopAfter / 60) + 'h';
+            stopAfterDisplay = (msg.stopAfter / 60).toFixed(1) + ' h';
         }
 
         if (msg.id) {
             id = msg.id;
-            process.send({ message: `Charging worker ${id} is running. Will stop after ${stopAfter}.` });
+            process.send({ message: `Charging worker ${id} is running. Will stop after ${stopAfterDisplay}.` });
         }
-        stopAfter = msg.stopAfter * 60000;
-        timer = startTimer(stopAfter, timer);
+        timer = startTimer(msg.stopAfter * 60000, timer);
     }
 });
 
