@@ -19,7 +19,7 @@ class ChargePoint {
 
         /* Structure of CallHandlers
             {
-                <Action>: [<cb>, ...],
+                <Action>: <cb>,
                 .
                 .
                 .
@@ -139,12 +139,11 @@ class ChargePoint {
 
                 if (type == 2) { // CALL
                     const action = msg[2];
+                    const fn = this.callHandlers[action];
+
                     // Check if handlers are registered for the call
-                    if (this.callHandlers[action]) {
-                        if (!Array.isArray(this.callHandlers[action])) {
-                            this.callHandlers[action] = [this.callHandlers[action]];
-                        }
-                        this.callHandlers[action].forEach(cb => typeof cb == 'function' && cb(msg, this.callRespond(msg)));
+                    if (typeof fn == 'function') {
+                        fn(msg, this.callRespond(msg));
                     }
                 }
                 else {
@@ -205,17 +204,8 @@ class ChargePoint {
 
     // Handle Calls
     on(action, cb) {
-        // Create action if not previously registered
-        if (!this.callHandlers[action]) {
-            this.callHandlers[action] = [];
-        }
-        // Check if it is array, if not make it one
-        if (!Array.isArray(this.callHandlers[action])) {
-            this.callHandlers[action] = [this.callHandlers[action]];
-        }
-
-        // Finally push the callback
-        this.callHandlers[action].push(cb);
+        // Finally add the callback
+        this.callHandlers[action] = cb;
     }
 
     registerCall(id, cb) {
