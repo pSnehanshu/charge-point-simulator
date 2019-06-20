@@ -86,7 +86,7 @@ class ChargePoint {
             var data = JSON.stringify({
                 serialno: this.serialno,
                 uids: this.uids,
-                sessions: this.sessions.map(s => s.savable()),
+                sessions: this.sessions.map(s => typeof s.savable == 'function'? s.savable(): s),
                 log: this.io.cps_msglog
             }, null, 2);
 
