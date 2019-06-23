@@ -244,7 +244,6 @@ class ChargePoint {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
                 this.startHeartbeat(payload.heartbeatInterval * 1000);
-                this.setStatus('Available');
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
@@ -321,7 +320,7 @@ class ChargePoint {
                 }
 
                 // set to preparing
-                var msg = await this.setStatus('Preparing', connectorId);
+                var msg = await this.setStatus('Occupied', connectorId);
 
                 var sess = new Session(uid);
                 this.sessions.push(sess);
@@ -334,9 +333,6 @@ class ChargePoint {
                     meterStart: this.meterValue,
                     timestamp: new Date,
                 });
-
-                // Set status to charging
-                var msg = await this.setStatus('Charging', connectorId);
 
                 // Setting transactionId
                 sess.txId = msg[2].transactionId;
