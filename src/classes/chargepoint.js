@@ -104,59 +104,64 @@ class ChargePoint {
     }
 
     connect() {
-        this.io.cps_emit('message', 'Trying to connect...');
+        return new Promise((resolve, reject) => {
+            this.io.cps_emit('message', 'Trying to connect...');
 
-        var key = Buffer.from(process.env.KEY, 'hex').toString();
-        var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
-        var url = `${process.env.BACKENDURL}/${this.serialno}`
+            var key = Buffer.from(process.env.KEY, 'hex').toString();
+            var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
+            var url = `${process.env.BACKENDURL}/${this.serialno}`
 
-        this.client = new WebSocketClient();
-        this.client.connect(url, 'ocpp1.5', null, {
-            Authorization: `Basic ${basicAuth}`,
-        });
-
-        this.client.on('connectFailed', (error) => {
-            this.io.cps_emit('err', 'Connection Error: ' + error.toString());
-        });
-
-        this.client.on('connect', connection => {
-            this.io.cps_emit('success', `CP #${this.serialno} has successfuly connected to the backend`);
-
-            this.connection = connection;
-
-            connection.on('error', (error) => {
-                this.io.cps_emit('err', "Connection Error: " + error.toString());
+            this.client = new WebSocketClient();
+            this.client.connect(url, 'ocpp1.5', null, {
+                Authorization: `Basic ${basicAuth}`,
             });
-            connection.on('close', () => {
-                this.io.cps_emit('message', 'echo-protocol Connection Closed');
+
+            this.client.on('connectFailed', (error) => {
+                this.io.cps_emit('err', 'Connection Error: ' + error.toString());
             });
-            connection.on('message', (message) => {
-                this.io.cps_emit('unimportant', '<< Received:' + message.utf8Data);
 
-                const msg = JSON.parse(message.utf8Data);
-                const type = msg[0];
-                const id = msg[1];
+            this.client.on('connect', connection => {
+                this.io.cps_emit('success', `CP #${this.serialno} has successfuly connected to the backend`);
 
-                if (type == 2) { // CALL
-                    const action = msg[2];
-                    const fn = this.callHandlers[action];
+                this.connection = connection;
 
-                    // Check if handlers are registered for the call
-                    if (typeof fn == 'function') {
-                        fn(msg, this.callRespond(msg));
-                    }
-                }
-                else {
-                    // Check if callbacks are registered for the response
-                    if (this.callResultHandlers[id]) {
-                        if (!Array.isArray(this.callResultHandlers[id])) {
-                            this.callResultHandlers[id] = [this.callResultHandlers[id]];
+                connection.on('error', (error) => {
+                    this.io.cps_emit('err', "Connection Error: " + error.toString());
+                });
+                connection.on('close', () => {
+                    this.io.cps_emit('message', 'Websocket Connection Closed');
+                    await this.connect();
+                    await this.boot();
+                });
+                connection.on('message', (message) => {
+                    this.io.cps_emit('unimportant', '<< Received:' + message.utf8Data);
+
+                    const msg = JSON.parse(message.utf8Data);
+                    const type = msg[0];
+                    const id = msg[1];
+
+                    if (type == 2) { // CALL
+                        const action = msg[2];
+                        const fn = this.callHandlers[action];
+
+                        // Check if handlers are registered for the call
+                        if (typeof fn == 'function') {
+                            fn(msg, this.callRespond(msg));
                         }
-                        this.callResultHandlers[id].forEach(cb => typeof cb == 'function' && cb(msg));
-                        // After all response handled, removed the CALL
-                        delete this.callResultHandlers[id];
                     }
-                }
+                    else {
+                        // Check if callbacks are registered for the response
+                        if (this.callResultHandlers[id]) {
+                            if (!Array.isArray(this.callResultHandlers[id])) {
+                                this.callResultHandlers[id] = [this.callResultHandlers[id]];
+                            }
+                            this.callResultHandlers[id].forEach(cb => typeof cb == 'function' && cb(msg));
+                            // After all response handled, removed the CALL
+                            delete this.callResultHandlers[id];
+                        }
+                    }
+                });
+                resolve();
             });
         });
     }
