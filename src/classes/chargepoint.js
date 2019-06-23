@@ -128,7 +128,7 @@ class ChargePoint {
                 connection.on('error', (error) => {
                     this.io.cps_emit('err', "Connection Error: " + error.toString());
                 });
-                connection.on('close', () => {
+                connection.on('close', async () => {
                     this.io.cps_emit('message', 'Websocket Connection Closed');
                     await this.connect();
                     await this.boot();
