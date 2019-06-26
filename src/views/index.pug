@@ -7,7 +7,7 @@ block content
     h2 Welcome
 
     fieldset
-        legend Active charge points
+        legend Active charge points (#{Object.keys(active).length})
         ul
             each cp in active
                 li.w3-hover-text-red.cplink
