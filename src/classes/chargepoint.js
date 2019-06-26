@@ -130,6 +130,7 @@ class ChargePoint {
                 });
                 connection.on('close', async () => {
                     this.io.cps_emit('message', 'Websocket Connection Closed');
+                    this.connection = null;
                     await this.connect();
                     await this.boot();
                 });
