@@ -3,8 +3,10 @@ tmp/
 temp/
 
 # data directories
-charge-points/
 logs/
+
+# Chargepoint state files
+charge-points/*.json
 
 # Logs
 logs
