@@ -77,10 +77,10 @@ class ChargePoint {
         // If temporary logs exists, set them
         this._io.cps_msglog = Array.isArray(this.log) ? this.log : [];
 
-        // Setup
+        /* // Setup
         io.on('connection', socket => {
             console.log(`Socket.io connection established`);
-        });
+        }); */
     }
 
     save() {
