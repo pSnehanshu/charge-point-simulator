@@ -46,7 +46,7 @@ class ChargePoint {
             }
 
             // Temporarily Load the logs as well
-            this.log = cpfile.log;
+            this.log = cpfile.log || [];
         }
 
         // An instance of Socket.io io()
@@ -75,7 +75,7 @@ class ChargePoint {
         this._io = io;
 
         // If temporary logs exists, set them
-        this._io.cps_msglog = Array.isArray(this.log) ? this.log : [];
+        this._io.cps_msglog = this.log;
 
         /* // Setup
         io.on('connection', socket => {
