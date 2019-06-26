@@ -251,8 +251,8 @@ class ChargePoint {
                 setTimeout(() => this.boot(), retry);
             }
         } catch (err) {
-            this.io.cps_emit('err', err.message);
-            this.io.cps_emit('message', 'Retrying to send BootNotification...');
+            this.io.cps_emit('err', err);
+            this.io.cps_emit('message', `Will resend BootNotification after ${retry / 1000}s...`);
             this.accepted = false;
             setTimeout(() => this.boot(), retry);
         };
@@ -265,14 +265,14 @@ class ChargePoint {
     async startHeartbeat(resendAfter = -1) {
         try {
             this.io.cps_emit('message', 'Sending heartbeat...');
-            var msg = await this.send('Heartbeat')
+            var msg = await this.send('Heartbeat');
             this.io.cps_emit('success', 'Heartbeat response received');
             if (resendAfter >= 0) {
                 setTimeout(() => this.startHeartbeat(resendAfter), resendAfter);
                 this.io.cps_emit('message', `Next heartbeat after ${resendAfter / 1000} s`);
             }
         } catch (err) {
-            this.io.cps_emit('err', err.message);
+            this.io.cps_emit('err', err);
         }
     }
 
