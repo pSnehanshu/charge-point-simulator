@@ -39,7 +39,7 @@ router.post('/boot', function (req, res) {
 });
 
 router.post('/save', function (req, res) {
-    req.cp.save();
+    req.cp.save().catch(err => req.cp.io.cps_emit('err', `Failed to save: ${err.message}`));
     res.end();
 });
 
