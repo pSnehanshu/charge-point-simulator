@@ -7,7 +7,7 @@ $(function () {
     $.get(`/cp/${serialno}/msglog`, function (data) {
         myconsole.html('');
         data.forEach(msg => {
-            addMsg(msg.message, msg.type, false);
+            addMsg(msg.message, msg.type, msg.timestamp, false);
         });
         updateScroll('console');
     });
@@ -79,9 +79,15 @@ function updateScroll(id) {
     var element = document.getElementById(id);
     element.scrollTop = element.scrollHeight;
 }
-function addMsg(msg, type = 'message', scrollDown = true) {
+function addMsg(msg, type = 'message', timestamp, scrollDown = true) {
     var myconsole = $('#console');
     var pre = $('<pre>');
+
+    // If no timestamp is set, then use the current time.
+    if (!timestamp) timestamp = Date.now();
+    
+    var time = new Date(timestamp);
+    msg = `[${time.toLocaleString()}] ${msg}`;
 
     switch (type) {
         case 'message':
