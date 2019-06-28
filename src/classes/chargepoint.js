@@ -244,7 +244,7 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
-                this.startHeartbeat(payload.heartbeatInterval * 1000);
+                this.startHeartbeat(90 * 1000);
             }
             else if (status == 'Rejected') {
                 this.accepted = false;
