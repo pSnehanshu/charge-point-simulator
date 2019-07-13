@@ -363,9 +363,10 @@ class ChargePoint {
             }
             var nextUid = this.uids[this.chargeIndex];
 
+            // Check if previous transaction/session was accepted by the backend or not
             if (sess && sess.status == 'Accepted') {
                 // First StopTransaction
-                // and then start the next transaction
+                // and then start the next transaction/session
                 this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
 
                 // Updating meterValue
@@ -386,6 +387,7 @@ class ChargePoint {
                 // Carry on charging the next
                 this.charge(nextUid, this.onSessionEnd());
             }
+            // The previous session was not accepted. We can start the next transaction/session
             else {
                 // Carry on charging the next
                 this.charge(nextUid, this.onSessionEnd());
