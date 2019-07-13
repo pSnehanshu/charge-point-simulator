@@ -32,6 +32,18 @@ class Session {
         return this.energy * 60 / this.power; // in minutes
     }
 
+    get enerySpent() {
+        var duration = this.duration;
+        var energy = this.energy;
+        var elapsed = this.elapsed;
+
+        if (elapsed >= duration) {
+            return energy;
+        }
+
+        return (energy / duration) * elapsed;
+    }
+
     get io() {
         if (!this._io) {
             throw new Error('Socket io instance not set yet');

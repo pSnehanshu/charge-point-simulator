@@ -361,7 +361,7 @@ class ChargePoint {
                 this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
 
                 // Updating meterValue
-                this.meterValue += sess.energy * 1000;
+                this.meterValue += sess.enerySpent * 1000;
 
                 var msg = await this.send('StopTransaction', {
                     idTag: sess.uid,
