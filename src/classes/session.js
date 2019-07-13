@@ -67,6 +67,9 @@ class Session {
     }
 
     startCharging(onEnd) {
+        // Registering the callback
+        this.onSessionEnd = onEnd;
+
         // Displaying session details in client
         this.io.cps_emit('message', JSON.stringify(this.savable(), null, 2));
 
@@ -85,11 +88,25 @@ class Session {
             }
             if (msg.stop) {
                 this.stop = new Date;
-                if (typeof onEnd == 'function') {
-                    onEnd(this);
+                if (typeof this.onSessionEnd == 'function') {
+                    this.onSessionEnd(this);
                 }
             }
         });
+    }
+
+    // It will kill the worker and call the startCharging's callback
+    stopCharging() {
+        // If a session is already finished, don't try to stop it
+        if (this.stop instanceof Date) {
+            throw new Error(`Session ${this.id} has already stopped on ${this.stop.toLocaleString()}. Can't stop it again.`);
+        } else {
+            this.worker.kill();
+            this.stop = new Date;
+            if (typeof this.onSessionEnd == 'function') {
+                this.onSessionEnd(this);
+            }
+        }
     }
 
     // returns a savable version of the session

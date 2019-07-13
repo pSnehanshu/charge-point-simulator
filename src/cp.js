@@ -69,6 +69,21 @@ router.post('/uid-upload', function (req, res) {
     });
 });
 
+router.post('/stop/:sess_id', function (req, res) {
+    var notFound = req.cp.sessions.every(session => {
+        if (session.id == req.params.sess_id && typeof session.stopCharging == 'function') {
+            try {
+                session.stopCharging();
+            } catch (error) {
+                req.io.cps_emit('err', error.message);
+            }
+            return false;
+        }
+        return true;
+    });
+    res.send({ found: !notFound });
+});
+
 /////////////////////////////////////////////////////////////////////
 
 // Source: https://stackoverflow.com/a/17428705/9990365
