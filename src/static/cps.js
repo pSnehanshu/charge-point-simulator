@@ -1,3 +1,4 @@
+var currentSession = {};
 // Load existing log messages
 $(function () {
     var myconsole = $('#console');
@@ -38,6 +39,16 @@ $('#clsbtn').click(function (e) {
     $('#console').html('');
     action(serialno, 'clear');
 });
+$('#stopCurrentSession').click(function (e) {
+    e.preventDefault();
+    $('#console').html('');
+    action(serialno, `stop/${currentSession.id}`, function (err, data) {
+        if (err) return;
+        if (data.found) {
+            setCurrentSession({});
+        }
+    });
+});
 
 // Socket.io /////////////////////////////////
 const socket = io(`/${serialno}`);
@@ -63,6 +74,10 @@ socket.on('save', function (msg) {
             setTimeout(() => btn.text('Save').removeClass('w3-green'), 1000);
         }, 2000);
     }
+});
+socket.on('session', function (msg) {
+    var session = JSON.parse(msg);
+    setCurrentSession(session);
 });
 ////////////////////////////////////////////
 function action(serial, act, cb) {
@@ -117,4 +132,16 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true) {
     if (scrollDown) {
         if ($('#autoscroll').is(':checked')) updateScroll('console');
     }
+}
+function setCurrentSession(session = {}) {
+    currentSession = session;
+    var currentUid = currentSession.uid || '--';
+    var currentTxid = currentSession.txId || '--';
+    var currentStartTime = currentSession.start || '--';
+    var currentEndTime = currentSession.end || '--';
+
+    $('#currentUid').html(currentUid);
+    $('#currentTxid').html(currentTxid);
+    $('#currentStartTime').html(currentStartTime);
+    $('#currentEndTime').html(currentEndTime);
 }

@@ -342,6 +342,9 @@ class ChargePoint {
                 // Start the charging
                 sess.status = 'Accepted';
                 sess.startCharging(onEnd);
+                
+                // Notify the frontend about this session
+                this.io.cps_emit('session', sess.savable());
 
             } catch (error) {
                 this.io.cps_emit('err', error.message);
