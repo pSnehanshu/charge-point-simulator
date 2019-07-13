@@ -86,6 +86,19 @@ class ChargePoint {
         }); */
     }
 
+    get currentSession() {
+        if (this.sessions.length <= 0) {
+            return {};
+        }
+        var lastSession = this.sessions[this.sessions.length - 1];
+        // Check if it has ended
+        if (lastSession.stop instanceof Date) {
+            return {};
+        } else {
+            return lastSession;
+        }
+    }
+
     save() {
         return new Promise((resolve, reject) => {
             this.io.emit('save', 'saving');

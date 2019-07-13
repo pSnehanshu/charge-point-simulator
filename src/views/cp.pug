@@ -4,7 +4,17 @@ block title
     | Charge point ##{serialno}
 
 block content
-    script const serialno = '#{serialno}'; 
+    -
+        var thisSession = {};
+        if (sessions.length > 0) {
+            var lastSession = sessions[sessions.length - 1];
+            if (!(lastSession.stop instanceof Date)){
+                thisSession = typeof lastSession.savable == 'function' ? lastSession.savable() : lastSession;
+            } 
+        }
+        thisSession = JSON.stringify(thisSession);
+
+    script const serialno = '#{serialno}'; var currentSession = !{thisSession};
 
     button#save.w3-btn.w3-tiny.w3-round.w3-border.w3-right Save
 

@@ -1,6 +1,6 @@
-var currentSession = {};
 // Load existing log messages
 $(function () {
+    setCurrentSession(currentSession);
     var myconsole = $('#console');
     myconsole.append(
         $('<pre>').addClass('w3-text-white').text('Loading console...')
@@ -134,6 +134,8 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true) {
     }
 }
 function setCurrentSession(session = {}) {
+    if (session == null) session = {};
+
     currentSession = session;
     var currentUid = currentSession.uid || '--';
     var currentTxid = currentSession.txId || '--';
