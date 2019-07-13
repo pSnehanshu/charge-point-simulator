@@ -357,6 +357,12 @@ class ChargePoint {
     onSessionEnd() {
         return async (sess) => {
             this.chargeIndex++;
+            // If there's no next UID in list, then start from beginning
+            if (!this.uids[this.chargeIndex]) {
+                this.chargeIndex = 0;
+            }
+            var nextUid = this.uids[this.chargeIndex];
+
             if (sess && sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction
@@ -378,15 +384,11 @@ class ChargePoint {
                 await this.setStatus('Available');
 
                 // Carry on charging the next
-                if (this.uids[this.chargeIndex]) {
-                    this.charge(this.uids[this.chargeIndex], this.onSessionEnd());
-                }
+                this.charge(nextUid, this.onSessionEnd());
             }
             else {
                 // Carry on charging the next
-                if (this.uids[this.chargeIndex]) {
-                    this.charge(this.uids[this.chargeIndex], this.onSessionEnd());
-                }
+                this.charge(nextUid, this.onSessionEnd());
             }
         }
     }
