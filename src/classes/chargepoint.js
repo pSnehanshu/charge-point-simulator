@@ -61,6 +61,9 @@ class ChargePoint {
         // Setting meter value (wh)
         this.meterValue = cpfile.meterValue || 0;
 
+        // Index to keep track of which driver uid is currently charging
+        this.chargeIndex = 0;
+
         // Start saving
         setInterval(() => this.save(), 30000);
     }
@@ -299,8 +302,7 @@ class ChargePoint {
             this.io.cps_emit('err', errMSg);
             throw new Error(errMSg);
         }
-        var i = 0;
-        this.charge(this.uids[i], this.onSessionEnd(i));
+        this.charge(this.uids[this.chargeIndex], this.onSessionEnd());
     }
 
     async charge(uid, onEnd, connectorId = 1) {
@@ -352,9 +354,9 @@ class ChargePoint {
     }
 
     // A helper function that helps to loop charging session one after another
-    onSessionEnd(i) {
+    onSessionEnd() {
         return async (sess) => {
-            i++;
+            this.chargeIndex++;
             if (sess && sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction
@@ -376,14 +378,14 @@ class ChargePoint {
                 await this.setStatus('Available');
 
                 // Carry on charging the next
-                if (this.uids[i]) {
-                    this.charge(this.uids[i], this.onSessionEnd(i));
+                if (this.uids[this.chargeIndex]) {
+                    this.charge(this.uids[this.chargeIndex], this.onSessionEnd());
                 }
             }
             else {
                 // Carry on charging the next
-                if (this.uids[i]) {
-                    this.charge(this.uids[i], this.onSessionEnd(i));
+                if (this.uids[this.chargeIndex]) {
+                    this.charge(this.uids[this.chargeIndex], this.onSessionEnd());
                 }
             }
         }
