@@ -41,7 +41,6 @@ $('#clsbtn').click(function (e) {
 });
 $('#stopCurrentSession').click(function (e) {
     e.preventDefault();
-    $('#console').html('');
     action(serialno, `stop/${currentSession.id}`, function (err, data) {
         if (err) return;
         if (data.found) {
