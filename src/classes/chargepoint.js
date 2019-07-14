@@ -151,8 +151,6 @@ class ChargePoint {
                     await this.boot();
                 });
                 connection.on('message', (message) => {
-                    this.io.cps_emit('unimportant', '<< Received:' + message.utf8Data);
-
                     const msg = JSON.parse(message.utf8Data);
                     const type = msg[0];
                     const id = msg[1];
@@ -195,8 +193,6 @@ class ChargePoint {
             const uniqueId = 'msg_' + shortid.generate();
             const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
 
-            this.io.cps_emit('unimportant', '>> Sending:' + msg);
-
             this.connection.sendUTF(msg);
             this.registerCall(uniqueId, resolve);
         });
@@ -212,7 +208,6 @@ class ChargePoint {
                 }
 
                 var response = JSON.stringify([3, msg[1], payload]);
-                self.io.cps_emit('unimportant', `>> Sending: ${response}`);
                 self.connection.sendUTF(response);
             }
 
