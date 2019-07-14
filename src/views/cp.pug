@@ -8,9 +8,10 @@ block content
         var thisSession = {};
         if (sessions.length > 0) {
             var lastSession = sessions[sessions.length - 1];
-            if (!(lastSession.stop instanceof Date)){
-                thisSession = typeof lastSession.savable == 'function' ? lastSession.savable() : lastSession;
-            } 
+            // if lastSession.stop ia an instance of Date, that means the session has finished
+            if (!(lastSession.stop instanceof Date) && typeof lastSession.savable == 'function'){
+                thisSession =  lastSession.savable();
+            }
         }
         thisSession = JSON.stringify(thisSession);
 
@@ -35,13 +36,13 @@ block content
                     th Driver UID
                     th Transaction id
                     th Start time
-                    th Expected end time
+                    th Expected duration
                     th
                 tr
                     td#currentUid --
                     td#currentTxid --
                     td#currentStartTime --
-                    td#currentEndTime --
+                    td#currentDuration --
                     td
                         button.w3-btn.w3-red.w3-ripple#stopCurrentSession Stop
 

@@ -119,6 +119,7 @@ class Session {
             txId: this.txId,
             uid: this.uid,
             elapsed: this.elapsed,
+            duration: this.duration,
         };
     }
 };

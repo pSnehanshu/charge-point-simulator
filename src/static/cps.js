@@ -139,10 +139,10 @@ function setCurrentSession(session = {}) {
     var currentUid = currentSession.uid || '--';
     var currentTxid = currentSession.txId || '--';
     var currentStartTime = currentSession.start || '--';
-    var currentEndTime = currentSession.end || '--';
+    var currentDuration = currentSession.duration || '--';
 
     $('#currentUid').html(currentUid);
     $('#currentTxid').html(currentTxid);
     $('#currentStartTime').html(currentStartTime);
-    $('#currentEndTime').html(currentEndTime);
+    $('#currentDuration').html(currentDuration + ' min');
 }
