@@ -1,3 +1,4 @@
+var statusResetTimeout = null;
 // Load existing log messages
 $(function () {
     setCurrentSession(currentSession);
@@ -77,6 +78,19 @@ socket.on('save', function (msg) {
 socket.on('session', function (msg) {
     var session = JSON.parse(msg);
     setCurrentSession(session);
+});
+socket.on('heartbeat', function (resendAfter) {
+    clearTimeout(statusResetTimeout);
+    if (resendAfter < 0) {
+        resendAfter = 90000;
+    }
+    // Set online
+    $('#statusIndicator').removeClass('w3-red').addClass('w3-green');
+    $('#statusText').text('Online');
+    statusResetTimeout = setTimeout(() => {
+        $('#statusIndicator').addClass('w3-red').removeClass('w3-green');
+        $('#statusText').text('Offline');
+    }, resendAfter);
 });
 ////////////////////////////////////////////
 function action(serial, act, cb) {

@@ -281,12 +281,10 @@ class ChargePoint {
      */
     async startHeartbeat(resendAfter = -1) {
         try {
-            this.io.cps_emit('message', 'Sending heartbeat...');
             var msg = await this.send('Heartbeat');
-            this.io.cps_emit('success', 'Heartbeat response received');
+            this.io.emit('heartbeat', resendAfter);
             if (resendAfter >= 0) {
                 setTimeout(() => this.startHeartbeat(resendAfter), resendAfter);
-                this.io.cps_emit('message', `Next heartbeat after ${resendAfter / 1000} s`);
             }
         } catch (err) {
             this.io.cps_emit('err', err);
