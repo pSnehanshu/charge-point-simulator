@@ -5,7 +5,17 @@ const router = express.Router();
 module.exports = router;
 
 router.get('/', async function (req, res) {
-    res.render('cp', req.cp);
+    res.render('cp', {
+        serialno: req.cp.serialno,
+        sessions: req.cp.sessions,
+        uids: req.cp.uids,
+        minPause: req.cp.getParam('minPause'),
+        maxPause: req.cp.getParam('maxPause'),
+        minEnergy: req.cp.getParam('minEnergy'),
+        maxEnergy: req.cp.getParam('maxEnergy'),
+        minPower: req.cp.getParam('minPower'),
+        maxPower: req.cp.getParam('maxPower'),
+    });
 });
 
 router.get('/msglog', function (req, res) {
@@ -84,6 +94,14 @@ router.post('/stop/:sess_id', function (req, res) {
     res.send({ found: !notFound });
 });
 
+router.post('/params', function (req, res) {
+    for (param in req.body) {
+        if (req.body[param].trim().length > 0)
+            req.cp.setParam(param, req.body[param]);
+    }
+    // Finally
+    req.cp.save().finally(() => res.redirect(`/cp/${req.cp.serialno}`));
+});
 /////////////////////////////////////////////////////////////////////
 
 // Source: https://stackoverflow.com/a/17428705/9990365

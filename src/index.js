@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const helmet = require('helmet');
+const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const ChargePoint = require('./classes/chargepoint');
 const socket = require('./socket');
@@ -10,11 +11,13 @@ const handleCall = require('./handleCall');
 const port = process.env.PORT || 4300;
 const app = express();
 const httpServer = app.listen(port, () => console.log(`App listening on port ${port}...`));
+
 app.set('view engine', 'pug');
 app.set('views', './src/views');
 app.use(helmet());
 app.use('/static', express.static('./src/static'));
 app.use(fileUpload());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Setup socket.io
 socket.setup(httpServer);
