@@ -150,7 +150,7 @@ class ChargePoint {
                     this.io.cps_emit('err', "Connection Error: " + error.toString());
                 });
                 connection.on('close', async () => {
-                    this.io.cps_emit('message', 'Websocket Connection Closed');
+                    this.io.cps_emit('err', 'Websocket Connection Closed');
                     this.connection = null;
                     await this.connect();
                     await this.boot();
@@ -293,12 +293,12 @@ class ChargePoint {
 
     setStatus(status, connectorId = 0) {
         return new Promise((resolve, reject) => {
+            this.status = status;
             this.send('StatusNotification', {
                 connectorId,
                 errorCode: 'NoError',
                 status,
             }).then(msg => {
-                this.status = status;
                 this.io.cps_emit('success', `CP status has been set to ${this.status}`)
                 resolve();
             }).catch(err => reject(err));
