@@ -85,10 +85,10 @@ socket.on('heartbeat', function (resendAfter) {
         resendAfter = 90000;
     }
     // Set online
-    $('#statusIndicator').removeClass('w3-red').addClass('w3-green');
+    $('#statusIndicator').removeClass('w3-red w3-orange').addClass('w3-green');
     $('#statusText').text('Online');
     statusResetTimeout = setTimeout(() => {
-        $('#statusIndicator').addClass('w3-red').removeClass('w3-green');
+        $('#statusIndicator').addClass('w3-red').removeClass('w3-green w3-orange');
         $('#statusText').text('Offline');
     }, resendAfter);
 });

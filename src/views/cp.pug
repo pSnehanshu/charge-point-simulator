@@ -24,8 +24,8 @@ block content
 
     .w3-row.w3-padding.w3-right.w3-margin-right(style={ 'max-width': '100px' })
         .w3-col.l4.m4.s4
-            #statusIndicator.w3-circle.w3-red(style={ height: '7px', width: '7px', margin: '4px' })
-        #statusText.w3-col.l8.m8.s8.w3-tiny Offline
+            #statusIndicator.w3-circle.w3-orange(style={ height: '7px', width: '7px', margin: '4px' })
+        #statusText.w3-col.l8.m8.s8.w3-tiny Unknown
     button#save.w3-btn.w3-tiny.w3-round.w3-border.w3-right Save
 
     h2 CP ##{serialno}
@@ -61,9 +61,6 @@ block content
         label.w3-margin
             input#autoscroll(type="checkbox", checked)
             |  Auto-scroll
-        label.w3-margin
-            input#unimportant-toggle(type="checkbox")
-            |  Show unimportant messages 
         button#clsbtn.w3-btn.w3-ripple.w3-border.w3-margin clear
 
     fieldset.w3-margin-top
