@@ -2,6 +2,7 @@ const fs = require('fs');
 const shortid = require('shortid');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
+const random = require('../utils/random');
 
 const cpfileroot = './charge-points/';
 
@@ -63,6 +64,10 @@ class ChargePoint {
 
         // Index to keep track of which driver uid is currently charging
         this.chargeIndex = 0;
+
+        // Min and max pause between two charging sessions in minutes
+        this.minPause = 15;
+        this.maxPause = 10 * 60;
 
         // Start saving
         setInterval(() => this.save(), 30000);
@@ -394,7 +399,10 @@ class ChargePoint {
                 await this.setStatus('Available');
 
                 // Carry on charging the next
-                this.charge(nextUid, this.onSessionEnd());
+                // Put a random pause
+                let randomPause = random(this.minPause, this.maxPause);
+                this.io.cps_emit('message', `Waiting ${randomPause} min until next charge`);
+                setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * randomPause);
             }
             // The previous session was not accepted. We can start the next transaction/session
             else {
