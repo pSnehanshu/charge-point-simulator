@@ -416,13 +416,14 @@ class ChargePoint {
 module.exports = function (serial) {
     return new Promise((resolve, reject) => {
         fs.readFile(cpfileroot + serial + '.json', function (err, data) {
-            var cpfile = {};
-            if (err) {
-                // Error occured. Maybe file doesn't exists. That means, it's a new CP
-                cpfile.serialno = serial;
-            } else {
-                cpfile = JSON.parse(data);
-                cpfile.serialno = serial;
+            var cpfile = { serialno: serial };
+            if (!err) {
+                try{
+                    cpfile = JSON.parse(data);
+                    cpfile.serialno = serial;
+                } catch (err) {
+                    console.error('The given cpfile is invalid JSON. Ignoring it.');
+                }
             }
 
             var cp = new ChargePoint(cpfile);
