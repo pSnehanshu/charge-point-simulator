@@ -42,12 +42,13 @@ $('#clsbtn').click(function (e) {
 });
 $('#stopCurrentSession').click(function (e) {
     e.preventDefault();
-    action(serialno, `stop/${currentSession.id}`, function (err, data) {
-        if (err) return;
-        if (data.found) {
-            setCurrentSession({});
-        }
-    });
+    if (confirm('Do you want to stop the current session?'))
+        action(serialno, `stop/${currentSession.id}`, function (err, data) {
+            if (err) return;
+            if (data.found) {
+                setCurrentSession({});
+            }
+        });
 });
 
 // Socket.io /////////////////////////////////
