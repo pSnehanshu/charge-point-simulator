@@ -113,14 +113,14 @@ class Session {
     // returns a savable version of the session
     savable() {
         return {
-            id: this.id,
+            txId: this.txId,
             energy: this.energy,
             power: this.power,
             start: this.start,
-            txId: this.txId,
             uid: this.uid,
             elapsed: this.elapsed,
             duration: this.duration,
+            id: this.id,
         };
     }
 };
