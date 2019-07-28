@@ -50,6 +50,9 @@ class ChargePoint {
             this.log = cpfile.log || [];
         }
 
+        // Parameters of the cp
+        this.params = cpfile.params || {};
+
         // An instance of Socket.io io()
         this._io = null;
 
@@ -66,8 +69,8 @@ class ChargePoint {
         this.chargeIndex = 0;
 
         // Min and max pause between two charging sessions in minutes
-        this.minPause = cpfile.minPause || 15;
-        this.maxPause = cpfile.maxPause || 10 * 60;
+        this.minPause = this.getParam('minPause') || this.setParam('minPause', 15);
+        this.maxPause = this.getParam('maxPause') || this.setParam('maxPause', 10 * 60);
 
         // Start saving
         setInterval(() => this.save(), 30000);
@@ -104,6 +107,16 @@ class ChargePoint {
         }
     }
 
+    getParam(param) {
+        return this.params[param];
+    }
+    setParam(param, val) {
+        if (param) {
+            this.params[param] = val;
+        }
+        return val;
+    }
+
     save() {
         return new Promise((resolve, reject) => {
             this.io.emit('save', 'saving');
@@ -111,8 +124,7 @@ class ChargePoint {
                 serialno: this.serialno,
                 uids: this.uids,
                 meterValue: this.meterValue,
-                minPause: this.minPause,
-                maxPause: this.maxPause,
+                params: this.params,
                 sessions: this.sessions.map(s => typeof s.savable == 'function' ? s.savable() : s),
                 log: this.io.cps_msglog
             }, null, 2);
@@ -338,7 +350,12 @@ class ChargePoint {
                 // set to preparing
                 var msg = await this.setStatus('Occupied', connectorId);
 
-                var sess = new Session(uid);
+                var sess = new Session(uid, {
+                    minEnergy: this.getParam('minEnergy'),
+                    maxEnergy: this.getParam('maxEnergy'),
+                    minPower:  this.getParam('minPower'),
+                    maxPower:  this.getParam('maxPower'),
+                });
                 this.sessions.push(sess);
                 // Set socket.io io()
                 sess.io = this.io;

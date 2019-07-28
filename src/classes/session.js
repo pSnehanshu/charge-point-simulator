@@ -12,8 +12,8 @@ class Session {
         this.uid = uid;
 
         // Params
-        this.energy = params.energy|| random(this.params.minEnergy || 5, this.params.maxEnergy || 60);// in kWh
-        this.power  = params.power || random(this.params.minPower  || 3.7, this.params.maxPower|| 11); // in kW
+        this.energy = params.energy|| random(params.minEnergy || 5, params.maxEnergy || 60);// in kWh
+        this.power  = params.power || random(params.minPower  || 3.7, params.maxPower|| 11); // in kW
         this.start  = params.start || new Date;
         this.stop   = null;
 
@@ -22,6 +22,7 @@ class Session {
 
         // Transaction ID to be supplied by Backend
         this.txId = null;
+
         // Every session is invalid unless accepted
         this.status = 'Invalid';
 
