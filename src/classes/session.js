@@ -12,10 +12,10 @@ class Session {
         this.uid = uid;
 
         // Params
-        this.energy = params.energy || random(5, 60);// in kWh (randomly between 5 to 60)
-        this.power = params.power || random(3.7, 11); // in kW (randomly between 3.7 and 11)
-        this.start = params.start || new Date;
-        this.stop = null;
+        this.energy = params.energy|| random(this.params.minEnergy || 5, this.params.maxEnergy || 60);// in kWh
+        this.power  = params.power || random(this.params.minPower  || 3.7, this.params.maxPower|| 11); // in kW
+        this.start  = params.start || new Date;
+        this.stop   = null;
 
         // The forked sub-process
         this.worker = null;
