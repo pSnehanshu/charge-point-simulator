@@ -66,8 +66,8 @@ class ChargePoint {
         this.chargeIndex = 0;
 
         // Min and max pause between two charging sessions in minutes
-        this.minPause = 15;
-        this.maxPause = 10 * 60;
+        this.minPause = cpfile.minPause || 15;
+        this.maxPause = cpfile.maxPause || 10 * 60;
 
         // Start saving
         setInterval(() => this.save(), 30000);
@@ -111,6 +111,8 @@ class ChargePoint {
                 serialno: this.serialno,
                 uids: this.uids,
                 meterValue: this.meterValue,
+                minPause: this.minPause,
+                maxPause: this.maxPause,
                 sessions: this.sessions.map(s => typeof s.savable == 'function' ? s.savable() : s),
                 log: this.io.cps_msglog
             }, null, 2);
