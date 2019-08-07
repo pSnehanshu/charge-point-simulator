@@ -332,11 +332,6 @@ class ChargePoint {
 
     async charge(uid, onEnd, connectorId = 1) {
         if (this.uids.includes(uid)) {
-            // If cp isn't available, don't start charging
-            if (this.status != 'Available') {
-                return this.io.cps_emit('err', `Can't charge as charge point status "${this.status}"`);
-            }
-
             try {
                 // set to preparing
                 var msg = await this.setStatus('Available', connectorId);
