@@ -67,7 +67,7 @@ app.use('/cp/:serialno', async function (req, res, next) {
             this.cps_msglog.push({ type: event, message, timestamp: Date.now() });
             this.emit(event, message);
         }.bind(socket.namespaces[req.serialno]);
-    } 
+    }
 
     // Set it to req and give it to cp as well
     req.cp.io = req.io = socket.namespaces[req.serialno];

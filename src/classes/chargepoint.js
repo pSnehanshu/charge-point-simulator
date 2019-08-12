@@ -1,10 +1,12 @@
 const fs = require('fs');
+const path = require('path');
 const shortid = require('shortid');
+const sqlite3 = require('sqlite3');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
 const random = require('../utils/random');
 
-const cpfileroot = './charge-points/';
+const cpfileroot = path.join(__dirname, '../..', 'charge-points');
 
 class ChargePoint {
     constructor(cpfile = {}) {
@@ -45,10 +47,25 @@ class ChargePoint {
                     });
                 }
             }
-
-            // Temporarily Load the logs as well
-            this.log = cpfile.log || [];
         }
+
+        // Logs SQLite db for logs
+        this.logsFile = path.join(cpfileroot, this.serialno + '.logs.db');
+        this.logsDb = new sqlite3.Database(this.logsFile, function (err) {
+            if (err) {
+                this.logsDb = null;
+                console.error(err.message);
+            }
+        });
+        // Create table if not exists
+        this.logsDb.run('CREATE TABLE IF NOT EXISTS `logs` ( `sno` INTEGER PRIMARY KEY AUTOINCREMENT , `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , `type` VARCHAR(15) NOT NULL , `message` TEXT NOT NULL );',
+            (err) => {
+                if (err) {
+                    console.error('Unable to create logs table:', err);
+                }
+            }
+        );
+
 
         // Parameters of the cp
         this.params = cpfile.params || {};
@@ -73,7 +90,12 @@ class ChargePoint {
         this.maxPause = this.getParam('maxPause') || this.setParam('maxPause', 10 * 60);
 
         // Start saving
-        setInterval(() => this.save(), 30000);
+        setInterval(() => {
+            this.save().catch(err => {
+                console.error(err);
+                this.io.cps_emit('err', `Failed to save: ${err.message}`);
+            })
+        }, 30000);
     }
 
     get io() {
@@ -84,14 +106,6 @@ class ChargePoint {
     }
     set io(io) {
         this._io = io;
-
-        // If temporary logs exists, set them
-        this._io.cps_msglog = this.log;
-
-        /* // Setup
-        io.on('connection', socket => {
-            console.log(`Socket.io connection established`);
-        }); */
     }
 
     get currentSession() {
@@ -119,6 +133,7 @@ class ChargePoint {
 
     save() {
         return new Promise((resolve, reject) => {
+            var cp = this;
             this.io.emit('save', 'saving');
             var data = JSON.stringify({
                 serialno: this.serialno,
@@ -126,14 +141,35 @@ class ChargePoint {
                 meterValue: this.meterValue,
                 params: this.params,
                 sessions: this.sessions.map(s => typeof s.savable == 'function' ? s.savable() : s),
-                log: this.io.cps_msglog
+                //log: this.io.cps_msglog
             }, null, 2);
 
             // Write
-            fs.writeFile(cpfileroot + this.serialno + '.json', data, (err) => {
+            fs.writeFile(path.join(cpfileroot, this.serialno + '.json'), data, (err) => {
                 if (err) return reject(err);
-                this.io.emit('save', 'saved');
-                resolve();
+
+                if (this.io.cps_msglog.length > 0) {
+                    var sql = `INSERT INTO logs (type, message) VALUES`;
+                    var params = [];
+                    this.io.cps_msglog.forEach(log => {
+                        sql += `\n(?, ?),`;
+                        params.push(log.type);
+                        params.push(log.message);
+                    });
+                    sql = sql.substring(0, sql.length - 1);
+
+                    this.logsDb.run(sql, params, function (err) {
+                        if (err) return reject(err);
+
+                        cp.io.cps_msglog = [];
+                        cp.io.emit('save', 'saved');
+                        resolve();
+                    });
+                } else {
+                    // No need to save in db
+                    this.io.emit('save', 'saved');
+                    resolve();
+                }
             });
         });
     }
@@ -348,8 +384,8 @@ class ChargePoint {
                 var sess = new Session(uid, {
                     minEnergy: this.getParam('minEnergy'),
                     maxEnergy: this.getParam('maxEnergy'),
-                    minPower:  this.getParam('minPower'),
-                    maxPower:  this.getParam('maxPower'),
+                    minPower: this.getParam('minPower'),
+                    maxPower: this.getParam('maxPower'),
                 });
                 this.sessions.push(sess);
                 // Set socket.io io()
@@ -367,7 +403,7 @@ class ChargePoint {
                 // Start the charging
                 sess.status = 'Accepted';
                 sess.startCharging(onEnd);
-                
+
                 // Notify the frontend about this session
                 this.io.cps_emit('session', sess.savable());
 
@@ -432,7 +468,7 @@ module.exports = function (serial) {
         fs.readFile(cpfileroot + serial + '.json', function (err, data) {
             var cpfile = { serialno: serial };
             if (!err) {
-                try{
+                try {
                     cpfile = JSON.parse(data);
                     cpfile.serialno = serial;
                 } catch (err) {

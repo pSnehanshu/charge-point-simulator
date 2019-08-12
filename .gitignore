@@ -8,6 +8,7 @@ logs/
 # Chargepoint state files
 charge-points/*.json
 charge-points/*.db
+charge-points/*.db-journal
 
 # Logs
 logs

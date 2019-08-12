@@ -1,4 +1,6 @@
 var statusResetTimeout = null;
+var leastSno = null;
+
 // Load existing log messages
 $(function () {
     setCurrentSession(currentSession);
@@ -9,10 +11,55 @@ $(function () {
     $.get(`/cp/${serialno}/msglog`, function (data) {
         myconsole.html('');
         data.forEach(msg => {
+            if (leastSno == null) {
+                leastSno = parseInt(msg.sno);
+            }
+
+            if (typeof msg.sno == 'number') {
+                if (msg.sno < leastSno) {
+                    leastSno = msg.sno;
+                }
+            }
+
             addMsg(msg.message, msg.type, msg.timestamp, false);
         });
         updateScroll('console');
     });
+});
+
+$('#console').scroll(function () {
+    var myconsole = $(this);
+    var pos = myconsole.scrollTop();
+
+    // Run when console is scrolled to top
+    if (pos == 0) {
+        // Find the least sno among the logs
+        var before = leastSno;
+        $.get(`/cp/${serialno}/msglog?before=${before}`, function (data) {
+            var logsMarkups = [];
+            data.forEach(msg => {
+                if (leastSno == null) {
+                    leastSno = parseInt(msg.sno);
+                }
+
+                if (typeof msg.sno == 'number') {
+                    if (msg.sno < leastSno) {
+                        leastSno = msg.sno;
+                    }
+                }
+                var markup = addMsg(msg.message, msg.type, msg.timestamp, false, true);
+                myconsole.prepend(markup);
+                logsMarkups.push(markup);
+            });
+
+            // Scroll to previous place
+            var previous_height = 0;
+            logsMarkups.forEach(function (log) {
+                previous_height += log.outerHeight();
+            });
+            myconsole.scrollTop(previous_height);
+        });
+    }
 });
 
 $('#act-heartbeat').click(function (e) {
@@ -108,40 +155,38 @@ function updateScroll(id) {
     var element = document.getElementById(id);
     element.scrollTop = element.scrollHeight;
 }
-function addMsg(msg, type = 'message', timestamp, scrollDown = true) {
+function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount = false) {
     var myconsole = $('#console');
     var pre = $('<pre>');
+    var markup = null;
 
     // If no timestamp is set, then use the current time.
     if (!timestamp) timestamp = Date.now();
-    
+
     var time = new Date(timestamp);
     msg = `[${time.toLocaleString()}] ${msg}`;
 
     switch (type) {
         case 'message':
-            myconsole.append(
-                pre.addClass('w3-text-white').text(msg)
-            );
+            markup = pre.addClass('w3-text-white').text(msg);
             break;
         case 'success':
-            myconsole.append(
-                pre.addClass('w3-text-green').text(msg)
-            );
+            markup = pre.addClass('w3-text-green').text(msg);
             break;
         case 'unimportant':
-            if (!$('#unimportant-toggle').is(':checked')) return;
-
-            myconsole.append(
-                pre.addClass('w3-text-grey').text(msg)
-            );
+            markup = pre.addClass('w3-text-grey').text(msg);
             break;
         case 'err':
-            myconsole.append(
-                pre.addClass('w3-text-red').text(msg)
-            );
+            markup = pre.addClass('w3-text-red').text(msg);
             break;
     }
+
+    if (dontMount) {
+        return markup;
+    }
+
+    // Mounting the markup
+    myconsole.append(markup);
 
     if (scrollDown) {
         if ($('#autoscroll').is(':checked')) updateScroll('console');

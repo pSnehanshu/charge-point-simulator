@@ -19,7 +19,20 @@ router.get('/', async function (req, res) {
 });
 
 router.get('/msglog', function (req, res) {
-    res.json(req.io.cps_msglog);
+    req.cp.logsDb.all(`SELECT sno, timestamp, type, message FROM logs WHERE ${req.query.before ? 'sno < ?' : '1 = ?'} ORDER BY sno DESC LIMIT 0, 10;`, req.query.before || 1,
+        function (err, logs) {
+            if (err) {
+                return res.status(500).send(err.message);
+            }
+
+            // Reverse it because frontends needs in reversed
+            logs = logs.reverse();
+            // Append all the unsaved logs
+            logs = [...logs, ...req.io.cps_msglog];
+
+            res.json(logs);
+        }
+    );
 });
 
 router.post('/connect', function (req, res) {
@@ -32,8 +45,13 @@ router.post('/connect', function (req, res) {
 router.post('/start', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    req.cp.start();
-    res.end();
+    try {
+        req.cp.start();
+        res.end();
+    } catch (error) {
+        console.error(error.message);
+    }
+
 });
 
 router.post('/heartbeat', function (req, res) {
