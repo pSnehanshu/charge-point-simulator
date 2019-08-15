@@ -85,10 +85,6 @@ class ChargePoint {
         // Index to keep track of which driver uid is currently charging
         this.chargeIndex = 0;
 
-        // Min and max pause between two charging sessions in minutes
-        this.minPause = this.getParam('minPause') || this.setParam('minPause', 15);
-        this.maxPause = this.getParam('maxPause') || this.setParam('maxPause', 10 * 60);
-
         // Start saving
         setInterval(() => {
             this.save().catch(err => {
@@ -450,7 +446,7 @@ class ChargePoint {
 
                 // Carry on charging the next
                 // Put a random pause
-                let randomPause = random(this.minPause, this.maxPause);
+                let randomPause = random(this.getParam('minPause'), this.getParam('maxPause'));
                 this.io.cps_emit('message', `Waiting ${randomPause} min until next charge`);
                 setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * randomPause);
             }
