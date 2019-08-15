@@ -19,7 +19,7 @@ router.get('/', async function (req, res) {
 });
 
 router.get('/msglog', function (req, res) {
-    req.cp.logsDb.all(`SELECT sno, timestamp, type, message FROM logs WHERE ${req.query.before ? 'sno < ?' : '1 = ?'} ORDER BY sno DESC LIMIT 0, 10;`, req.query.before || 1,
+    req.cp.logsDb.all(`SELECT sno, timestamp, type, message FROM logs WHERE ${req.query.before ? 'sno < ?' : '1 = ?'} ORDER BY sno DESC LIMIT 0, 20;`, req.query.before || 1,
         function (err, logs) {
             if (err) {
                 return res.status(500).send(err.message);
