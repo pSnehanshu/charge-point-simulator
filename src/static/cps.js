@@ -37,7 +37,7 @@ $('#console').scroll(function () {
         var before = leastSno;
         $.get(`/cp/${serialno}/msglog?before=${before}`, function (data) {
             var logsMarkups = [];
-            data.forEach(msg => {
+            data.reverse().forEach(msg => {
                 if (leastSno == null) {
                     leastSno = parseInt(msg.sno);
                 }
