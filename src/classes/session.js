@@ -81,7 +81,7 @@ class Session {
             this.worker = null;
         }
 
-        this.io.cps_emit('success', `Charging UID #${this.uid}`);
+        this.io.cps_emit('success', `Charging ${this.id}`);
         this.worker = fork(workerScript);
         this.worker.send({ id: this.id, stopAfter: this.duration });
         this.worker.on('message', (msg) => {

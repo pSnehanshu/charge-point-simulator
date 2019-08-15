@@ -431,7 +431,7 @@ class ChargePoint {
             if (sess && sess.status == 'Accepted') {
                 // First StopTransaction
                 // and then start the next transaction/session
-                this.io.cps_emit('message', `Trying to stop charging UID #${sess.uid}...`);
+                this.io.cps_emit('message', `Trying to stop charging ${sess.id}...`);
 
                 // Updating meterValue
                 this.meterValue += sess.enerySpent * 1000;
@@ -443,7 +443,7 @@ class ChargePoint {
                     transactionId: sess.txId,
                 });
 
-                this.io.cps_emit('success', `UID #${sess.uid} has stopped charging`);
+                this.io.cps_emit('success', `${sess.id} has stopped charging`);
 
                 // Set status to Available
                 await this.setStatus('Available');
