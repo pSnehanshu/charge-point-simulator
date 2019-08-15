@@ -48,6 +48,9 @@ $('#console').scroll(function () {
                     }
                 }
                 var markup = addMsg(msg.message, msg.type, msg.timestamp, false, true);
+                if (markup == null) {
+                    return;
+                }
                 myconsole.prepend(markup);
                 logsMarkups.push(markup);
             });
@@ -167,7 +170,6 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount =
     msg = `[${time.toLocaleString()}] ${msg}`;
 
     switch (type) {
-        default:
         case 'message':
             markup = pre.addClass('w3-text-white').text(msg);
             break;
@@ -183,6 +185,11 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount =
     }
 
     if (dontMount) {
+        return markup;
+    }
+
+    // If markup is still null, don't append it
+    if (markup == null) {
         return markup;
     }
 
