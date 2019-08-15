@@ -167,6 +167,7 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount =
     msg = `[${time.toLocaleString()}] ${msg}`;
 
     switch (type) {
+        default:
         case 'message':
             markup = pre.addClass('w3-text-white').text(msg);
             break;
