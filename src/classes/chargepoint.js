@@ -183,8 +183,16 @@ class ChargePoint {
                 Authorization: `Basic ${basicAuth}`,
             });
 
-            this.client.on('connectFailed', (error) => {
+            this.client.on('connectFailed', async (error) => {
                 this.io.cps_emit('err', 'Connection Error: ' + error.toString());
+                reject(error);
+
+                // Reconnecting
+                this.connect()
+                    .then(() => this.boot())
+                    .catch(err => {
+                        this.io.cps_emit('err', 'Unable to connect to backend. Retrying...');
+                    });
             });
 
             this.client.on('connect', connection => {
@@ -198,8 +206,12 @@ class ChargePoint {
                 connection.on('close', async () => {
                     this.io.cps_emit('err', 'Websocket Connection Closed');
                     this.connection = null;
-                    await this.connect();
-                    await this.boot();
+                    try {
+                        await this.connect();
+                        await this.boot();
+                    } catch (error) {
+                        this.io.cps_emit('err', 'Unable to connect to backend. Retrying...');
+                    }
                 });
                 connection.on('message', (message) => {
                     const msg = JSON.parse(message.utf8Data);
