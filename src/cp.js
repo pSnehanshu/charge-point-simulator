@@ -38,7 +38,11 @@ router.get('/msglog', function (req, res) {
 router.post('/connect', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
-    req.cp.connect();
+    req.cp.connect()
+        .then(() => {})
+        .catch(err => {
+            req.io.cps_emit('err', 'Unable to connect to backend.');
+        });
     res.end();
 });
 

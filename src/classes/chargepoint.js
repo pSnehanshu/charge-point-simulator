@@ -170,7 +170,7 @@ class ChargePoint {
         });
     }
 
-    connect() {
+    connect(reconnect = false) {
         return new Promise((resolve, reject) => {
             this.io.cps_emit('message', 'Trying to connect...');
 
@@ -187,12 +187,15 @@ class ChargePoint {
                 this.io.cps_emit('err', 'Connection Error: ' + error.toString());
                 reject(error);
 
-                // Reconnecting
-                this.connect()
-                    .then(() => this.boot())
-                    .catch(err => {
-                        this.io.cps_emit('err', 'Unable to connect to backend. Retrying...');
-                    });
+                if (reconnect) {
+                    this.io.cps_emit('err', `Unable to connect to backend. Will retry after ${reconnect}s`)
+                    setTimeout(() => {
+                        // Reconnecting
+                        this.connect(reconnect)
+                            .then(() => resolve())
+                            .catch(err => console.error('Unable to connect to backend. Retrying...'));
+                    }, reconnect * 1000);
+                }
             });
 
             this.client.on('connect', connection => {
@@ -207,10 +210,10 @@ class ChargePoint {
                     this.io.cps_emit('err', 'Websocket Connection Closed');
                     this.connection = null;
                     try {
-                        await this.connect();
+                        await this.connect(5);
                         await this.boot();
                     } catch (error) {
-                        this.io.cps_emit('err', 'Unable to connect to backend. Retrying...');
+                        console.error('Unable to connect to backend. Retrying...');
                     }
                 });
                 connection.on('message', (message) => {
