@@ -476,7 +476,7 @@ class ChargePoint {
 
 module.exports = function (serial) {
     return new Promise((resolve, reject) => {
-        fs.readFile(cpfileroot + serial + '.json', function (err, data) {
+        fs.readFile(path.join(cpfileroot, serial + '.json'), function (err, data) {
             var cpfile = { serialno: serial };
             if (!err) {
                 try {
