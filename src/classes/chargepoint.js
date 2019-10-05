@@ -270,10 +270,10 @@ class ChargePoint {
     send(action = 'Heartbeat', payload = {}) {
         return new Promise((resolve, reject) => {
             if (!this.connection) {
-                return reject('Connection with the backend has not yet been established.\nPlease connect to the backend first.');
+                return reject(new Error('Connection with the backend has not yet been established.\nPlease connect to the backend first.'));
             }
             if (!this.accepted && action != 'BootNotification') {
-                return reject('Charge-point has not yet been accepted by the backend.\nPlease send BootNotification first and then retry.');
+                return reject(new Error('Charge-point has not yet been accepted by the backend.\nPlease send BootNotification first and then retry.'));
             }
             const msgTypeId = 2;
             const uniqueId = 'msg_' + shortid.generate();
@@ -445,6 +445,8 @@ class ChargePoint {
 
             } catch (error) {
                 this.io.cps_emit('err', error.message);
+                // Since loop has broken, update
+                this._inLoop = false;
             }
         } else {
             let errMsg = `The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`;
