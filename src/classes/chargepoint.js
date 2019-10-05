@@ -85,6 +85,10 @@ class ChargePoint {
         // Index to keep track of which driver uid is currently charging
         this.chargeIndex = 0;
 
+        // A flag to determine whether an auto-charging loop is active or not
+        // Please use .inLoop getter instead of this.
+        this._inLoop = false;
+
         // Start saving
         setInterval(() => {
             this.save().catch(err => {
@@ -92,6 +96,22 @@ class ChargePoint {
                 this.io.cps_emit('err', `Failed to save: ${err.message}`);
             })
         }, 30000);
+    }
+
+    get inLoop() {
+        return !!this._inLoop;
+    }
+    set inLoop(v) {
+        if (!v && this._inLoop) {
+            // Actually stop the loop
+            if (typeof this.currentSession.stopCharging == 'function') {
+                this.currentSession.stopCharging();
+            }
+
+            // Notify UI
+            this.io.cps_emit('success', 'The auto-charging loop has been stopped.');
+        }
+        this._inLoop = !!v;
     }
 
     get io() {
@@ -367,6 +387,11 @@ class ChargePoint {
     }
 
     start() {
+        // If already in a loop, then don't start new loop
+        if (this.inLoop) {
+            return this.io.cps_emit('err', 'Auto-charging loop is already active, please stop the loop before starting a new one.');
+        }
+        this.inLoop = true;
         this.io.cps_emit('message', 'Starting auto-charge....');
 
         if (this.uids.length <= 0) {
@@ -459,6 +484,11 @@ class ChargePoint {
                 // Set status to Available
                 await this.setStatus('Available');
 
+                // Check if loop has been distrupted
+                if (!this.inLoop) {
+                    return;
+                }
+
                 // Carry on charging the next
                 // Put a random pause
                 let randomPause = random(this.getParam('minPause'), this.getParam('maxPause'));
@@ -467,6 +497,11 @@ class ChargePoint {
             }
             // The previous session was not accepted. We can start the next transaction/session
             else {
+                // Check if loop has been distrupted
+                if (!this.inLoop) {
+                    return;
+                }
+                
                 // Carry on charging the next
                 this.charge(nextUid, this.onSessionEnd());
             }

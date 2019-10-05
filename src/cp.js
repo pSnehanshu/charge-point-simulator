@@ -39,23 +39,35 @@ router.post('/connect', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
     req.cp.connect()
-        .then(() => {})
+        .then(() => { })
         .catch(err => {
             req.io.cps_emit('err', 'Unable to connect to backend.');
         });
     res.end();
 });
 
+// Start the auto-charging loop
 router.post('/start', function (req, res) {
     // Please start the session only if it hasn't started yet.
     // Start the charging sessions
     try {
         req.cp.start();
-        res.end();
     } catch (error) {
         console.error(error.message);
     }
+    res.end();
+});
 
+// Stop the auto-charging loop
+router.post('/stop-loop', function (req, res) {
+    // Check whether loop is active
+    if (!req.cp.inLoop) {
+        req.cp.io.cps_emit('err', `Auto-charging loop isn't active.`);
+    } else {
+        // Stop the loop
+        req.cp.inLoop = false;
+    }
+    res.end();
 });
 
 router.post('/heartbeat', function (req, res) {

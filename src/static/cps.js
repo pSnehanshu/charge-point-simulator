@@ -77,6 +77,10 @@ $('#act-startautocharge').click(function (e) {
     e.preventDefault();
     action(serialno, 'start');
 });
+$('#act-stopautocharge').click(function (e) {
+    e.preventDefault();
+    action(serialno, 'stop-loop');
+});
 $('#act-connect').click(function (e) {
     e.preventDefault();
     action(serialno, 'connect');
@@ -151,7 +155,7 @@ function action(serial, act, cb) {
     }).fail(function () {
         if (typeof cb == 'function') cb('Failed to do the job');
         else alert('Failed to do the job');
-    })
+    });
 }
 
 function updateScroll(id) {
