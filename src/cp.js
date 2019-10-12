@@ -108,7 +108,7 @@ router.post('/uid-upload', function (req, res) {
             return res.sendStatus(400);
         }
         var uids = transpose(output)[0];
-        req.cp.uids = arrayUnique(req.cp.uids.concat(uids));
+        req.cp.uids = arrayUnique(uids);
         res.redirect(`/cp/${req.cp.serialno}`);
     });
 });
@@ -151,6 +151,5 @@ function arrayUnique(array) {
                 a.splice(j--, 1);
         }
     }
-
     return a;
 }
