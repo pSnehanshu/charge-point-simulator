@@ -55,7 +55,7 @@ class Session {
 
         // Setup
         io.on('connection', socket => {
-            console.log(`Socket.io connection established`);
+            //console.log(`Socket.io connection established`);
         });
     }
 
