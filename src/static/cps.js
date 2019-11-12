@@ -85,6 +85,10 @@ $('#act-connect').click(function (e) {
     e.preventDefault();
     action(serialno, 'connect');
 });
+$('#act-disconnect').click(function (e) {
+    e.preventDefault();
+    action(serialno, 'disconnect');
+});
 $('#save').click(function (e) {
     e.preventDefault();
     action(serialno, 'save');

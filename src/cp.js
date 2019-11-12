@@ -46,6 +46,11 @@ router.post('/connect', function (req, res) {
     res.end();
 });
 
+router.post('/disconnect', function (req, res) {
+    req.cp.disconnect();
+    res.end();
+});
+
 // Start the auto-charging loop
 router.post('/start', function (req, res) {
     // Please start the session only if it hasn't started yet.

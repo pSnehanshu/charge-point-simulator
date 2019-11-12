@@ -86,6 +86,9 @@ class ChargePoint {
         // Please use .inLoop getter instead of this.
         this._inLoop = false;
 
+        // True means the user tried to gracefully disconnect, no need to automatically reconnect
+        this.manual_close = false;
+
         // Start saving
         setInterval(() => {
             this.save().catch(err => {
@@ -191,6 +194,7 @@ class ChargePoint {
     connect(reconnect = false) {
         return new Promise((resolve, reject) => {
             this.io.cps_emit('message', 'Trying to connect...');
+            this.manual_close = false;
 
             var key = Buffer.from(process.env.KEY, 'hex').toString();
             var basicAuth = Buffer.from(`${this.serialno}:${key}`).toString('base64');
@@ -228,6 +232,8 @@ class ChargePoint {
                     this.io.cps_emit('err', 'Websocket Connection Closed');
                     this.connection = null;
                     try {
+                        if (this.manual_close) return;
+
                         await this.connect(5);
                         await this.boot();
                     } catch (error) {
@@ -263,6 +269,16 @@ class ChargePoint {
                 resolve();
             });
         });
+    }
+
+    disconnect() {
+        if (this.connection) {
+            this.manual_close = true;
+            this.io.cps_emit('message', 'Gracefully closing the connection...');
+            this.connection.close();
+        } else {
+            this.io.cps_emit('err', 'Already disconnected');
+        }
     }
 
     send(action = 'Heartbeat', payload = {}) {
@@ -497,7 +513,7 @@ class ChargePoint {
                 if (!this.inLoop) {
                     return;
                 }
-                
+
                 // Carry on charging the next
                 this.charge(nextUid, this.onSessionEnd());
             }
