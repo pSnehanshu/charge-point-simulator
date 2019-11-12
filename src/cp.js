@@ -15,6 +15,8 @@ router.get('/', async function (req, res) {
         maxEnergy: req.cp.getParam('maxEnergy'),
         minPower: req.cp.getParam('minPower'),
         maxPower: req.cp.getParam('maxPower'),
+        startIdleTime: req.cp.getParam('startIdleTime'),
+        endIdleTime: req.cp.getParam('endIdleTime'),
     });
 });
 

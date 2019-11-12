@@ -100,6 +100,13 @@ block content
                 label Maximum
                     input.w3-input.w3-border(type="number", name="maxPower", value=maxPower)
 
+            fieldset.w3-margin.param-fields
+                legend No charging between (UTC)
+                label Start
+                    input.w3-input.w3-border(type="time", name="startIdleTime", value=startIdleTime)
+                label End
+                    input.w3-input.w3-border(type="time", name="endIdleTime", value=endIdleTime)
+
             button.w3-btn.w3-border.w3-round.w3-margin(type="submit") Save
             
     script(src="/static/socket.io.js")

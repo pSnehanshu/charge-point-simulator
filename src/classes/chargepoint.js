@@ -137,8 +137,16 @@ class ChargePoint {
         }
     }
 
+    get idleTimeMessage() {
+        let d = new Date;
+        let currentTime = `${d.getUTCHours()}:${d.getUTCMinutes()}`;
+        return `It's idle time, no charging until ${this.getParam('endIdleTime')} UTC. Currently ${currentTime} UTC.`;
+    }
+
     getParam(param) {
-        return this.params[param];
+        let val = this.params[param];
+        if (typeof val == 'undefined') return '';
+        else return val;
     }
     setParam(param, val) {
         if (param) {
@@ -502,10 +510,17 @@ class ChargePoint {
                 }
 
                 // Carry on charging the next
+                let pause = 0;
+                if (this.isIdleTime()) {
+                    this.io.cps_emit('message', this.idleTimeMessage);
+                    pause = (this.getIdleTime().endIdleTime - (new Date)) / 60;
+                }
+
                 // Put a random pause
-                let randomPause = random(this.getParam('minPause'), this.getParam('maxPause'));
-                this.io.cps_emit('message', `Waiting ${randomPause} min until next charge`);
-                setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * randomPause);
+                pause += random(this.getParam('minPause'), this.getParam('maxPause'));
+                this.io.cps_emit('message', `Waiting ${pause} min until next charge`);
+
+                setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause);
             }
             // The previous session was not accepted. We can start the next transaction/session
             else {
@@ -515,9 +530,53 @@ class ChargePoint {
                 }
 
                 // Carry on charging the next
-                this.charge(nextUid, this.onSessionEnd());
+                if (this.isIdleTime()) {
+                    this.io.cps_emit('message', this.idleTimeMessage);
+                    let pause = (this.getIdleTime().endIdleTime - (new Date)) / 60;
+                    setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause);
+                } else {
+                    this.charge(nextUid, this.onSessionEnd());
+                }
             }
         }
+    }
+
+    isIdleTime() {
+        let { startIdleTime, endIdleTime } = this.getIdleTime();
+        if (startIdleTime && endIdleTime) {
+            let currentTime = new Date;
+            return currentTime > startIdleTime && currentTime < endIdleTime;
+        } else {
+            return false;
+        }
+    }
+
+    getIdleTime() {
+        let startIdleTime = this.getParam('startIdleTime');
+        let endIdleTime = this.getParam('endIdleTime');
+
+        let [startHour, startMinute] = startIdleTime.split(':');
+        let [endHour, endMinute] = endIdleTime.split(':');
+
+        startHour = parseInt(startHour);
+        startMinute = parseInt(startMinute);
+        endHour = parseInt(endHour);
+        endMinute = parseInt(endMinute);
+
+        if (isNaN(startHour) || isNaN(startMinute) || isNaN(endHour) || isNaN(endMinute)) {
+            return { startIdleTime: null, endIdleTime: null };
+        }
+
+        startIdleTime = new Date;
+        startIdleTime.setUTCHours(startHour, startMinute, 0, 0);
+
+        endIdleTime = new Date;
+        if (endHour < startHour) {
+            endIdleTime.setUTCDate(endIdleTime.getUTCDate() + 1);
+        }
+        endIdleTime.setUTCHours(endHour, endMinute, 0, 0);
+
+        return { startIdleTime, endIdleTime };
     }
 }
 
