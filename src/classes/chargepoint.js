@@ -58,7 +58,7 @@ class ChargePoint {
             }
         });
         // Create table if not exists
-        this.logsDb.run('CREATE TABLE IF NOT EXISTS `logs` ( `sno` INTEGER PRIMARY KEY AUTOINCREMENT , `timestamp` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP , `type` VARCHAR(15) NOT NULL , `message` TEXT NOT NULL );',
+        this.logsDb.run('CREATE TABLE IF NOT EXISTS `logs` ( `sno` INTEGER PRIMARY KEY AUTOINCREMENT , `timestamp` INTEGER NOT NULL , `type` VARCHAR(15) NOT NULL , `message` TEXT NOT NULL );',
             (err) => {
                 if (err) {
                     console.error('Unable to create logs table:', err);
@@ -162,12 +162,13 @@ class ChargePoint {
                 if (err) return reject(err);
 
                 if (this.io.cps_msglog.length > 0) {
-                    var sql = `INSERT INTO logs (type, message) VALUES`;
+                    var sql = `INSERT INTO logs (type, message, timestamp) VALUES`;
                     var params = [];
                     this.io.cps_msglog.forEach(log => {
-                        sql += `\n(?, ?),`;
+                        sql += `\n(?, ?, ?),`;
                         params.push(log.type);
                         params.push(log.message);
+                        params.push(log.timestamp);
                     });
                     sql = sql.substring(0, sql.length - 1);
 
