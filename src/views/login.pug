@@ -1,0 +1,15 @@
+extends layout
+
+block title
+    | Login to NewMotion Charge point simulator
+
+block content
+    fieldset.w3-margin.login-form
+        legend Enter password to access
+        .w3-panel.w3-padding(class='w3-' + color) #{message}
+        form(action="/login", method="post")
+            .w3-row
+                .w3-col.l9.m9
+                    input.w3-input.w3-border(type="password", name="password", placeholder="Enter password")
+                .w3-col.l3.m3
+                    button.w3-btn.w3-black.w3-border Login

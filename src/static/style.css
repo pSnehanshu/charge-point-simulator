@@ -36,3 +36,6 @@ body {
     display: inline-block;
     margin-left: 20px;
 }
+.login-form{
+    max-width: 500px;
+}

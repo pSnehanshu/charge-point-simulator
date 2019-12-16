@@ -3,14 +3,17 @@ const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
+const cookieParser = require('cookie-parser');
 const ChargePoint = require('./classes/chargepoint');
 const socket = require('./socket');
 const handleCall = require('./handleCall');
+const token = require('./token');
 
 // Express housekeeping
 const port = process.env.PORT || 4300;
 const app = express();
 const httpServer = app.listen(port, () => console.log(`App listening on port ${port}...`));
+const tokenName = 'token'; // The cookie name where the auth cookie is to be stored and checked
 
 app.set('view engine', 'pug');
 app.set('views', './src/views');
@@ -18,6 +21,7 @@ app.use(helmet());
 app.use('/static', express.static('./src/static'));
 app.use(fileUpload());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Setup socket.io
 socket.setup(httpServer);
@@ -29,6 +33,43 @@ const io = socket.io();
 }
 */
 global.chargepoints = {};
+
+app.get('/login', function (req, res) {
+    res.render('login');
+});
+
+app.post('/login', function (req, res) {
+    if (req.body.password && req.body.password.length > 0) {
+        if (req.body.password == process.env.PASSWORD) {
+            // Generate a cookie
+            res.cookie(tokenName, token.generate()).redirect('/');
+        } else {
+            res.render('login', {
+                message: 'Incorrect password!',
+                color: 'red'
+            });
+        }
+    } else {
+        res.render('login', {
+            message: 'Please enter a password',
+            color: 'red'
+        });
+    }
+});
+
+// Check authentication
+app.use(function (req, res, next) {
+    if (req.cookies[tokenName]) {
+        if (token.verify(req.cookies[tokenName])) {
+            return next();
+        }
+    }
+    res.redirect('/login');
+});
+
+app.post('/logout', function (req, res) {
+    res.clearCookie(tokenName).redirect('/login');
+});
 
 // Actual routes
 app.get('/', function (req, res) {
@@ -62,7 +103,7 @@ app.use('/cp/:serialno', async function (req, res, next) {
         socket.namespaces[req.serialno].cps_msglog = [];
         socket.namespaces[req.serialno].cps_emit = function (event, message) {
             if (typeof message == 'object') message = JSON.stringify(message);
-            
+
             // First record the message
             this.cps_msglog.push({ type: event, message, timestamp: Date.now() });
             this.emit(event, message);
