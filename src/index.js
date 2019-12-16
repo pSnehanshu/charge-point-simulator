@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+if (!(process.env.PASSWORD && process.env.SECRET)) {
+    throw new Error('Please set PASSWORD and SECRET to start.');
+}
+
 const express = require('express');
 const helmet = require('helmet');
 const bodyParser = require('body-parser');
