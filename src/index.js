@@ -44,22 +44,26 @@ app.get('/login', function (req, res) {
 });
 
 app.post('/login', function (req, res) {
+    let next = req.body.next || '/';
+
     if (req.body.password && req.body.password.length > 0) {
         if (req.body.password == process.env.PASSWORD) {
             // Generate a cookie
-            res.cookie(tokenName, token.generate()).redirect('/');
+            res.cookie(tokenName, token.generate()).redirect(next);
         } else {
-            res.render('login', {
+            var loginParams = {
                 message: 'Incorrect password!',
-                color: 'red'
-            });
+                color: 'red', next
+            };
         }
     } else {
-        res.render('login', {
+        var loginParams = {
             message: 'Please enter a password',
-            color: 'red'
-        });
+            color: 'red', next
+        };
     }
+
+    res.render('login', loginParams);
 });
 
 // Check authentication
@@ -69,7 +73,12 @@ app.use(function (req, res, next) {
             return next();
         }
     }
-    res.redirect('/login');
+
+    res.render('login', {
+        message: 'Enter password password to continue...',
+        color: 'orange',
+        next: req.url,
+    });
 });
 
 app.post('/logout', function (req, res) {

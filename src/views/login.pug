@@ -18,3 +18,5 @@ block content
                     input.w3-input.w3-border(type="password", name="password", placeholder="Enter password")
                 .w3-col.l3.m3
                     button.w3-btn.w3-black.w3-border Login
+            if next
+                input(type="hidden", name="next", value=next)
