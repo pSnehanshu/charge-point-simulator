@@ -10,7 +10,12 @@ module.exports = function (authFunction = null) {
     const router = express.Router();
 
     router.get('/status', function (req, res) {
-        res.send('Paused');
+        let { currentSession } = req.cp;
+        let status = 'Paused';
+        if (!(currentSession.stop instanceof Date) && typeof currentSession.savable == 'function') {
+            status = 'Charging';
+        }
+        res.send(status);
     });
 
     // Set auth gatekeeper
