@@ -52,7 +52,7 @@ app.post('/login', function (req, res) {
     if (req.body.password && req.body.password.length > 0) {
         if (req.body.password == process.env.PASSWORD) {
             // Generate a cookie
-            res.cookie(tokenName, token.generate()).redirect(next);
+            return res.cookie(tokenName, token.generate()).redirect(next);
         } else {
             var loginParams = {
                 message: 'Incorrect password!',
