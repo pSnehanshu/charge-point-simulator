@@ -22,8 +22,8 @@ html(lang="en")
         #container
             #header.w3-black.w3-row
                 .w3-col.s12.m4.l4
-                    h1
-                        a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Charge Point Simulator
+                    .w3-margin
+                        a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Go to homepage
                 .w3-col.s8.m6.l6.private
                     .w3-right.w3-margin
                         form(action="/cp", method="get")
@@ -39,10 +39,6 @@ html(lang="en")
 
             #body.w3-container
                 block content
-                
-            footer#footer.w3-container.w3-tiny
-                a(href="https://www.newmotion.com" target="_blank")
-                    img.w3-right.w3-margin(src="/static/newmotion-logo.jpg", alt="NewMotion", height="20")
         script.
             $(function () {
                 if (!private) {
