@@ -10,15 +10,18 @@ const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const ChargePoint = require('./classes/chargepoint');
+const cpRoutes = require('./cp');
 const socket = require('./socket');
 const handleCall = require('./handleCall');
 const token = require('./token');
+const Auth = require('./auth');
 
 // Express housekeeping
 const port = process.env.PORT || 4300;
 const app = express();
 const httpServer = app.listen(port, () => console.log(`App listening on port ${port}...`));
-const tokenName = 'token'; // The cookie name where the auth cookie is to be stored and checked
+const tokenName = 'cpstoken'; // The cookie name where the auth cookie is to be stored and checked
+const auth = Auth(tokenName); // The auth middleware
 
 app.set('view engine', 'pug');
 app.set('views', './src/views');
@@ -64,21 +67,6 @@ app.post('/login', function (req, res) {
     }
 
     res.render('login', loginParams);
-});
-
-// Check authentication
-app.use(function (req, res, next) {
-    if (req.cookies[tokenName]) {
-        if (token.verify(req.cookies[tokenName])) {
-            return next();
-        }
-    }
-
-    res.render('login', {
-        message: 'Enter password password to continue...',
-        color: 'orange',
-        next: req.url,
-    });
 });
 
 app.post('/logout', function (req, res) {
@@ -129,9 +117,9 @@ app.use('/cp/:serialno', async function (req, res, next) {
 
     next();
 }, function (req, res, next) {
-    handleCall(req.cp)
+    handleCall(req.cp);
     next();
-}, require('./cp'));
+}, cpRoutes(auth));
 
 // Finally, the 404 handler
 app.all('*', function (req, res) {
