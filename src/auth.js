@@ -9,7 +9,7 @@ module.exports = function (tokenName = 'token') {
         }
 
         res.render('login', {
-            message: 'Enter password password to continue...',
+            message: 'Enter password to continue...',
             color: 'orange',
             next: req.url,
         });
