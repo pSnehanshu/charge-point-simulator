@@ -69,18 +69,18 @@ app.post('/login', function (req, res) {
     res.render('login', loginParams);
 });
 
-app.post('/logout', function (req, res) {
+app.post('/logout', auth, function (req, res) {
     res.clearCookie(tokenName).redirect('/login');
 });
 
 // Actual routes
-app.get('/', function (req, res) {
+app.get('/', auth, function (req, res) {
     res.render('index', {
         active: global.chargepoints
     });
 });
 
-app.get('/cp', function (req, res) {
+app.get('/cp', auth, function (req, res) {
     if (req.query.serial) {
         res.redirect(`/cp/${req.query.serial}`);
     } else {
