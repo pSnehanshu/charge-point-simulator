@@ -24,6 +24,7 @@ html(lang="en")
                 .w3-col.s12.m4.l4
                     .w3-margin
                         a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Go to homepage
+                        .clock
                 .w3-col.s8.m6.l6.private
                     .w3-right.w3-margin
                         form(action="/cp", method="get")
@@ -39,9 +40,17 @@ html(lang="en")
 
             #body.w3-container
                 block content
+            #footer.w3-center
+                .clock.w3-padding
         script.
             $(function () {
                 if (!private) {
                     $('.private').hide();
                 }
+                setInterval(setClock, 500);
             });
+            function setClock() {
+                var time = new Date;
+                time = time.toUTCString();
+                $('.clock').text(time);
+            }
