@@ -175,7 +175,7 @@ function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount =
     if (!timestamp) timestamp = Date.now();
 
     var time = new Date(timestamp);
-    msg = `[${time.toLocaleString()}] ${msg}`;
+    msg = `[${time.toUTCString()}] ${msg}`;
 
     switch (type) {
         case 'message':
@@ -214,8 +214,8 @@ function setCurrentSession(session = {}) {
     currentSession = session;
     var currentUid = currentSession.uid || '--';
     var currentTxid = currentSession.txId || '--';
-    var currentStartTime = currentSession.start || '--';
-    var currentDuration = currentSession.duration || '--';
+    var currentStartTime = (new Date(currentSession.start)).toUTCString() || '--';
+    var currentDuration = Math.ceil(currentSession.duration) || '--';
 
     $('#currentUid').html(currentUid);
     $('#currentTxid').html(currentTxid);

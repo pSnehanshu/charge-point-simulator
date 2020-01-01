@@ -99,7 +99,7 @@ class Session {
     stopCharging() {
         // If a session is already finished, don't try to stop it
         if (this.stop instanceof Date) {
-            throw new Error(`Session ${this.id} has already stopped on ${this.stop.toLocaleString()}. Can't stop it again.`);
+            throw new Error(`Session ${this.id} has already stopped on ${this.stop.toUTCString()}. Can't stop it again.`);
         } else {
             this.worker.kill();
             this.stop = new Date;
