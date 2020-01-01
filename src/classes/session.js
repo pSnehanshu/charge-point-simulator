@@ -1,9 +1,5 @@
 const shortid = require('shortid');
-const { fork } = require('child_process');
-const path = require('path');
 const random = require('../utils/random');
-
-const workerScript = path.join(__dirname, '../', 'sessionWorker.js');
 
 class Session {
     constructor(uid, params = {}) {
@@ -17,7 +13,7 @@ class Session {
         this.start  = params.start || new Date;
         this.stop   = null;
 
-        // The forked sub-process
+        // The charging timer
         this.worker = null;
 
         // Transaction ID to be supplied by Backend
@@ -73,26 +69,8 @@ class Session {
         // Displaying session details in client
         this.io.cps_emit('message', JSON.stringify(this.savable(), null, 2));
 
-        // Kill existsing worker if exists
-        if (this.worker != null) {
-            this.worker.kill();
-            this.worker = null;
-        }
-
-        this.io.cps_emit('success', `Charging ${this.id}`);
-        this.worker = fork(workerScript);
-        this.worker.send({ id: this.id, stopAfter: this.duration });
-        this.worker.on('message', (msg) => {
-            if (msg.message) {
-                this.io.cps_emit('message', msg.message);
-            }
-            if (msg.stop) {
-                this.stop = new Date;
-                if (typeof this.onSessionEnd == 'function') {
-                    this.onSessionEnd(this);
-                }
-            }
-        });
+        this.io.cps_emit('success', `Charging ${this.id}. Duration ${Math.ceil(this.duration)} min.`);
+        this.worker = setTimeout(() => this.onSessionEnd(this), this.duration * 60000);
     }
 
     // It will kill the worker and call the startCharging's callback
@@ -101,7 +79,7 @@ class Session {
         if (this.stop instanceof Date) {
             throw new Error(`Session ${this.id} has already stopped on ${this.stop.toUTCString()}. Can't stop it again.`);
         } else {
-            this.worker.kill();
+            clearTimeout(this.worker);
             this.stop = new Date;
             if (typeof this.onSessionEnd == 'function') {
                 this.onSessionEnd(this);
