@@ -30,6 +30,20 @@ class ChargePoint {
         */
         this.callHandlers = {};
 
+        /* Structure of pendingCalls
+            {
+                <RandomID>: {
+                    msg: <string>
+                    handler: <function>,
+                    errorHandler: <function>
+                },
+                .
+                .
+                .
+            }
+        */
+        this.pendingCalls = {};
+
         this.uids = [];
         this.sessions = [];
 
@@ -243,6 +257,9 @@ class ChargePoint {
                     try {
                         await this.connect(5);
                         await this.boot();
+
+                        // Since reconnection is done, let's resend the pending message
+                        this.sendPendingCalls();
                     } catch (error) {
                         console.error('Unable to connect to backend. Retrying...');
                     }
@@ -296,12 +313,32 @@ class ChargePoint {
             if (!this.accepted && action != 'BootNotification') {
                 return reject(new Error('Charge-point has not yet been accepted by the backend.\nPlease send BootNotification first and then retry.'));
             }
-            const msgTypeId = 2;
-            const uniqueId = 'msg_' + shortid.generate();
-            const msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
 
-            this.connection.sendUTF(msg);
-            this.registerCall(uniqueId, resolve);
+            let msgTypeId = 2;
+            let uniqueId = 'msg_' + shortid.generate();
+            let msg = '';
+            if (typeof payload == 'string') {
+                let parsed = JSON.parse(payload);
+                msgTypeId = parsed[0];
+                uniqueId = parsed[1];
+                msg = payload;
+                payload = parsed[3];
+            } else {
+                msg = JSON.stringify([msgTypeId, uniqueId, action, payload]);
+            }
+
+            let pendingId = this.insertPendingCall(msg, m => resolve(m), e => reject(e));
+            this.connection.sendUTF(msg, err => {
+                if (err) {
+                    this.clearPendingCall(pendingId);
+                    reject(err);
+                } else {
+                    this.registerCall(uniqueId, m => {
+                        this.clearPendingCall(pendingId);
+                        resolve(m)
+                    });
+                }
+            });
         });
     }
 
@@ -576,6 +613,38 @@ class ChargePoint {
         endIdleTime.setUTCHours(endHour, endMinute, 0, 0);
 
         return { startIdleTime, endIdleTime };
+    }
+
+    insertPendingCall(msg = '', handler, errorHandler) {
+        if (!handler) handler = () => { };
+        if (!errorHandler) errorHandler = () => { };
+
+        do {
+            var randomId = shortid.generate();
+        } while (this.pendingCalls[randomId]);
+
+        this.pendingCalls[randomId] = { msg, handler, errorHandler };
+        return randomId;
+    }
+
+    clearPendingCall(randomId) {
+        if (this.pendingCalls[randomId]) {
+            delete this.pendingCalls[randomId];
+        }
+    }
+
+    async sendPendingCalls() {
+        for (let id in this.pendingCalls) {
+            let call = this.pendingCalls[id];
+            this.clearPendingCall(id);
+            try {
+                let response = await this.send('', call.msg);
+                call.handler(response);
+            } catch (error) {
+                call.errorHandler(error);
+            }
+
+        }
     }
 }
 
