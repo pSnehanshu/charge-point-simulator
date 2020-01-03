@@ -535,6 +535,9 @@ class ChargePoint {
                     transactionId: sess.txId,
                 });
 
+                // Notify the frontend about this stoppage
+                this.io.cps_emit('session', {});
+
                 this.io.cps_emit('success', `${sess.id} has stopped charging`);
 
                 // Set status to Available

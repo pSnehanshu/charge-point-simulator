@@ -104,7 +104,7 @@ $('#stopCurrentSession').click(function (e) {
         action(serialno, `stop/${currentSession.id}`, function (err, data) {
             if (err) return;
             if (data.found) {
-                setCurrentSession({});
+                //setCurrentSession({});
             }
         });
 });
