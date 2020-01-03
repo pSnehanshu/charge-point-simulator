@@ -554,7 +554,7 @@ class ChargePoint {
 
                 // Put a random pause
                 pause += random(this.getParam('minPause'), this.getParam('maxPause'));
-                this.io.cps_emit('message', `Waiting ${pause} min until next charge`);
+                this.io.cps_emit('message', `Waiting ${Math.round(pause)} min until next charge`);
 
                 setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause);
             }

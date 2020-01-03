@@ -69,7 +69,7 @@ class Session {
         // Displaying session details in client
         this.io.cps_emit('message', JSON.stringify(this.savable(), null, 2));
 
-        this.io.cps_emit('success', `Charging ${this.id}. Duration ${Math.ceil(this.duration)} min.`);
+        this.io.cps_emit('success', `Charging ${this.id}. Duration ${Math.round(this.duration)} min.`);
         this.worker = setTimeout(() => this.onSessionEnd(this), this.duration * 60000);
     }
 

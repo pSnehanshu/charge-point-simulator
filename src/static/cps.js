@@ -215,7 +215,7 @@ function setCurrentSession(session = {}) {
     var currentUid = currentSession.uid || '--';
     var currentTxid = currentSession.txId || '--';
     var currentStartTime = (new Date(currentSession.start)).toUTCString() || '--';
-    var currentDuration = Math.ceil(currentSession.duration) || '--';
+    var currentDuration = Math.round(currentSession.duration) || '--';
 
     $('#currentUid').html(currentUid);
     $('#currentTxid').html(currentTxid);
