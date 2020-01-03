@@ -549,7 +549,7 @@ class ChargePoint {
                 let pause = 0;
                 if (this.isIdleTime()) {
                     this.io.cps_emit('message', this.idleTimeMessage);
-                    pause = (this.getIdleTime().endIdleTime - (new Date)) / 60;
+                    pause = (this.getIdleTime().endIdleTime - (new Date)) / 60000;
                 }
 
                 // Put a random pause
