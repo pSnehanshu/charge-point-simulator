@@ -559,7 +559,11 @@ class ChargePoint {
                 pause += random(this.getParam('minPause'), this.getParam('maxPause'));
                 this.io.cps_emit('message', `Waiting ${Math.round(pause)} min until next charge`);
 
-                setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause);
+                setTimeout(() => {
+                    if (this.inLoop) {
+                        this.charge(nextUid, this.onSessionEnd());
+                    }
+                }, 60000 * pause);
             }
             // The previous session was not accepted. We can start the next transaction/session
             else {
