@@ -70,7 +70,7 @@ class Session {
         this.io.cps_emit('message', JSON.stringify(this.savable(), null, 2));
 
         this.io.cps_emit('success', `Charging ${this.id}. Duration ${Math.round(this.duration)} min.`);
-        this.worker = setTimeout(() => this.onSessionEnd(this), this.duration * 60000);
+        this.worker = setTimeout(() => this.stopCharging(), this.duration * 60000);
     }
 
     // It will kill the worker and call the startCharging's callback
@@ -80,6 +80,7 @@ class Session {
             throw new Error(`Session ${this.id} has already stopped on ${this.stop.toUTCString()}. Can't stop it again.`);
         } else {
             clearTimeout(this.worker);
+            this.worker = null;
             this.stop = new Date;
             if (typeof this.onSessionEnd == 'function') {
                 this.onSessionEnd(this);
