@@ -34,6 +34,8 @@ module.exports = function (authFunction = null) {
             maxPower: req.cp.getParam('maxPower'),
             startIdleTime: req.cp.getParam('startIdleTime'),
             endIdleTime: req.cp.getParam('endIdleTime'),
+            model: req.cp.getParam('model'),
+            vendor: req.cp.getParam('vendor'),
         });
     });
 

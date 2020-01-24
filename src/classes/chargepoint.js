@@ -82,7 +82,10 @@ class ChargePoint {
 
 
         // Parameters of the cp
-        this.params = cpfile.params || {};
+        this.params = cpfile.params || {
+            model: 'HOMEADVANCED',
+            vendor: 'eNovates',
+        };
 
         // An instance of Socket.io io()
         this._io = null;
@@ -389,8 +392,8 @@ class ChargePoint {
             this.io.cps_emit('message', 'Sending BootNotification...');
 
             var msg = await this.send('BootNotification', {
-                chargePointModel: 'HOMEADVANCED',
-                chargePointVendor: 'eNovates',
+                chargePointModel: this.getParam('model'),
+                chargePointVendor: this.getParam('vendor'),
             });
 
             var payload = msg[2];
