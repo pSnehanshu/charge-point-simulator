@@ -49,7 +49,7 @@ module.exports = function (authFunction = null) {
                 // Reverse it because frontends needs in reversed
                 logs = logs.reverse();
                 // Append all the unsaved logs
-                logs = [...logs, ...req.io.cps_msglog];
+                logs = [...logs, ...req.cp.io.cps_msglog];
 
                 res.json(logs);
             }
@@ -62,7 +62,7 @@ module.exports = function (authFunction = null) {
         req.cp.connect()
             .then(() => { })
             .catch(err => {
-                req.io.cps_emit('err', 'Unable to connect to backend.');
+                req.cp.io.cps_emit('err', 'Unable to connect to backend.');
             });
         res.end();
     });
@@ -115,7 +115,7 @@ module.exports = function (authFunction = null) {
 
     router.post('/clear', function (req, res) {
         req.cp.log = [];
-        req.io.cps_msglog = [];
+        req.cp.io.cps_msglog = [];
         req.cp.save();
         res.end();
     });
@@ -145,7 +145,7 @@ module.exports = function (authFunction = null) {
                 try {
                     session.stopCharging();
                 } catch (error) {
-                    req.io.cps_emit('err', error.message);
+                    req.cp.io.cps_emit('err', error.message);
                 }
                 return false;
             }

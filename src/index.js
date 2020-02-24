@@ -113,7 +113,7 @@ app.use('/cp/:serialno', async function (req, res, next) {
     }
 
     // Set it to req and give it to cp as well
-    req.cp.io = req.io = socket.namespaces[req.serialno];
+        req.cp.io = socket.namespaces[req.serialno];
 
     next();
 }, function (req, res, next) {
