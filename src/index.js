@@ -11,10 +11,10 @@ const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
 const ChargePoint = require('./classes/chargepoint');
 const cpRoutes = require('./cp');
-const socket = require('./socket');
-const handleCall = require('./handleCall');
-const token = require('./token');
-const Auth = require('./auth');
+const socket = require('./utils/socket');
+const handleCall = require('./utils/handleCall');
+const token = require('./utils/token');
+const Auth = require('./utils/auth');
 const loadExistingChargers = require('./utils/loadExistingChargers');
 
 main();

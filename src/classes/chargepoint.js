@@ -5,7 +5,7 @@ const sqlite3 = require('sqlite3');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
 const random = require('../utils/random');
-const socket = require('../socket');
+const socket = require('../utils/socket');
 
 const cpfileroot = path.join(__dirname, '../..', 'charge-points');
 
