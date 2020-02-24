@@ -32,10 +32,17 @@ body {
     overflow: auto;
     padding: 5px;
 }
-.cplink{
-    display: inline-block;
-    margin-left: 20px;
+.cplink>button{
+    background-color: transparent;
+    border: solid 1px transparent;
+    border-radius: 3px;
+    color: red;
+    margin-left: 10px;
 }
+.cplink>button:hover{
+    border-color: red;
+}
+
 .login-form{
     max-width: 500px;
 }

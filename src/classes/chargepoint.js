@@ -657,6 +657,11 @@ class ChargePoint {
 
         }
     }
+
+    // Stop all the node.js timers and the current active session (if exists)
+    destroy() {
+        // TODO
+    }
 }
 
 module.exports = function (serial, io) {

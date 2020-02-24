@@ -1,5 +1,9 @@
 const express = require('express');
 const csv = require('csv-parse');
+const fs = require('fs');
+const path = require('path');
+
+const cpfileroot = path.join(__dirname, '..', 'charge-points');
 
 module.exports = function (authFunction = null) {
     // Set an open auth function if not given
@@ -161,6 +165,40 @@ module.exports = function (authFunction = null) {
         }
         // Finally
         req.cp.save().finally(() => res.redirect(`/cp/${req.cp.serialno}`));
+    });
+
+    router.post('/remove', function (req, res) {
+        // Delete all related files
+        // First fetch all the related files
+        fs.readdir(cpfileroot, (err, files) => {
+            if (err) {
+                res.status(500).send(`Failed to remove chargepoint: ${err.message}`);
+            } else {
+                // Now delete the relevant files
+                let promises = files
+                    .filter(f => f.startsWith(`${req.serialno}.`))
+                    .map(f => new Promise((resolve, reject) => {
+                        fs.unlink(path.join(cpfileroot, f), err => {
+                            if (err) {
+                                reject(new Error(`Error with file ${f}: ${err.message}`));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    }));
+
+                Promise.all(promises)
+                    .then(() => {
+                        // Now remove from global.chargepoints
+                        if (typeof global.chargepoints[req.serialno].destroy == 'function') {
+                            global.chargepoints[req.serialno].destroy();
+                        }
+                        delete global.chargepoints[req.serialno];
+                        res.redirect('/');
+                    })
+                    .catch(err => res.status(500).send(`Failed to remove chargepoint: ${err.message}`));
+            }
+        });
     });
 
     return router;
