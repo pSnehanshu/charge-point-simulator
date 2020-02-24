@@ -107,13 +107,16 @@ class ChargePoint {
         // True means the user tried to gracefully disconnect, no need to automatically reconnect
         this.manual_close = false;
 
+        // The JavaScript timers, will need to be cleared if cp is destroyed
+        this.timers = {};
+
         // Start saving
-        setInterval(() => {
+        this.registerTimer('save', setInterval(() => {
             this.save().catch(err => {
                 console.error(err);
                 this.io.cps_emit('err', `Failed to save: ${err.message}`);
             })
-        }, 30000);
+        }, 30000));
     }
 
     get inLoop() {
@@ -237,12 +240,13 @@ class ChargePoint {
 
                 if (reconnect) {
                     this.io.cps_emit('err', `Unable to connect to backend. Will retry after ${reconnect}s`)
-                    setTimeout(() => {
+
+                    this.registerTimer('reconnect', setTimeout(() => {
                         // Reconnecting
                         this.connect(reconnect)
                             .then(() => resolve())
                             .catch(err => console.error('Unable to connect to backend. Retrying...'));
-                    }, reconnect * 1000);
+                    }, reconnect * 1000));
                 }
             });
 
@@ -408,13 +412,13 @@ class ChargePoint {
             else if (status == 'Rejected') {
                 this.accepted = false;
                 this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
-                setTimeout(() => this.boot(), retry);
+                this.registerTimer('retry-boot', setTimeout(() => this.boot(), retry));
             }
         } catch (err) {
             this.io.cps_emit('err', err);
             this.io.cps_emit('message', `Will resend BootNotification after ${retry / 1000}s...`);
             this.accepted = false;
-            setTimeout(() => this.boot(), retry);
+            this.registerTimer('retry-boot-on-error', setTimeout(() => this.boot(), retry));
         };
     }
 
@@ -427,7 +431,7 @@ class ChargePoint {
             var msg = await this.send('Heartbeat');
             this.io.emit('heartbeat', resendAfter);
             if (resendAfter >= 0) {
-                setTimeout(() => this.startHeartbeat(resendAfter), resendAfter);
+                this.registerTimer('heartbeat', setTimeout(() => this.startHeartbeat(resendAfter), resendAfter));
             }
         } catch (err) {
             this.io.cps_emit('err', err);
@@ -563,11 +567,11 @@ class ChargePoint {
                 pause += random(this.getParam('minPause'), this.getParam('maxPause'));
                 this.io.cps_emit('message', `Waiting ${Math.round(pause)} min until next charge`);
 
-                setTimeout(() => {
+                this.registerTimer('next-session', setTimeout(() => {
                     if (this.inLoop) {
                         this.charge(nextUid, this.onSessionEnd());
                     }
-                }, 60000 * pause);
+                }, 60000 * pause));
             }
             // The previous session was not accepted. We can start the next transaction/session
             else {
@@ -580,7 +584,7 @@ class ChargePoint {
                 if (this.isIdleTime()) {
                     this.io.cps_emit('message', this.idleTimeMessage);
                     let pause = (this.getIdleTime().endIdleTime - (new Date)) / 60;
-                    setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause);
+                    this.registerTimer('next-session-on-unaccepted', setTimeout(() => this.charge(nextUid, this.onSessionEnd()), 60000 * pause));
                 } else {
                     this.charge(nextUid, this.onSessionEnd());
                 }
@@ -658,9 +662,35 @@ class ChargePoint {
         }
     }
 
+    registerTimer(name = '', timer) {
+        if (typeof this.timers[name] == 'undefined') {
+            this.timers[name] = [];
+        }
+
+        if (!Array.isArray(this.timers[name])) {
+            this.timers[name] = [this.timers[name]];
+        }
+
+        this.timers[name].push(timer);
+    }
+
     // Stop all the node.js timers and the current active session (if exists)
-    destroy() {
-        // TODO
+    async destroy() {
+        // Clear all the timers
+        for (let timers in this.timers) {
+            if (Array.isArray(this.timers[timers])) {
+                this.timers[timers].forEach(t => clearTimeout(t));
+            } else {
+                clearTimeout(this.timers[timers]);
+            }
+        }
+
+        // TODO: Stop the current session (if exists)
+
+        // Destroy all the handlers
+        this.callResultHandlers = {};
+        this.callHandlers = {};
+        this.pendingCalls = {};
     }
 }
 

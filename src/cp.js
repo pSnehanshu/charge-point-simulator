@@ -188,10 +188,10 @@ module.exports = function (authFunction = null) {
                     }));
 
                 Promise.all(promises)
-                    .then(() => {
+                    .then(async () => {
                         // Now remove from global.chargepoints
                         if (typeof global.chargepoints[req.serialno].destroy == 'function') {
-                            global.chargepoints[req.serialno].destroy();
+                            await global.chargepoints[req.serialno].destroy();
                         }
                         delete global.chargepoints[req.serialno];
                         res.redirect('/');
