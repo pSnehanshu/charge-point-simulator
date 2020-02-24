@@ -5,6 +5,7 @@ const sqlite3 = require('sqlite3');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
 const random = require('../utils/random');
+const socket = require('../socket');
 
 const cpfileroot = path.join(__dirname, '../..', 'charge-points');
 
@@ -658,7 +659,7 @@ class ChargePoint {
     }
 }
 
-module.exports = function (serial) {
+module.exports = function (serial, io) {
     return new Promise((resolve, reject) => {
         fs.readFile(path.join(cpfileroot, serial + '.json'), function (err, data) {
             var cpfile = { serialno: serial };
@@ -672,11 +673,27 @@ module.exports = function (serial) {
             }
 
             var cp = new ChargePoint(cpfile);
+
+            // Create a namespace if not exists
+            if (!socket.namespaces[cp.serialno]) {
+                socket.namespaces[cp.serialno] = io.of(`/${cp.serialno}`);
+                socket.namespaces[cp.serialno].cps_msglog = [];
+                socket.namespaces[cp.serialno].cps_emit = function (event, message) {
+                    if (typeof message == 'object') message = JSON.stringify(message);
+
+                    // First record the message
+                    this.cps_msglog.push({ type: event, message, timestamp: Date.now() });
+                    this.emit(event, message);
+                }.bind(socket.namespaces[cp.serialno]);
+            }
+
+            // Set it to req and give it to cp as well
+            cp.io = socket.namespaces[cp.serialno];
+
             return resolve(cp);
         });
     });
 }
-
 
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;

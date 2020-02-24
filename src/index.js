@@ -93,27 +93,9 @@ app.use('/cp/:serialno', async function (req, res, next) {
     if (global.chargepoints[req.serialno]) {
         req.cp = global.chargepoints[req.serialno];
     } else {
-        req.cp = await ChargePoint(req.serialno);
+            req.cp = await ChargePoint(req.serialno, io);
         global.chargepoints[req.serialno] = req.cp;
     }
-
-    next();
-}, function (req, res, next) {
-    // Create a namespace if not exists
-    if (!socket.namespaces[req.serialno]) {
-        socket.namespaces[req.serialno] = io.of(`/${req.serialno}`);
-        socket.namespaces[req.serialno].cps_msglog = [];
-        socket.namespaces[req.serialno].cps_emit = function (event, message) {
-            if (typeof message == 'object') message = JSON.stringify(message);
-
-            // First record the message
-            this.cps_msglog.push({ type: event, message, timestamp: Date.now() });
-            this.emit(event, message);
-        }.bind(socket.namespaces[req.serialno]);
-    }
-
-    // Set it to req and give it to cp as well
-        req.cp.io = socket.namespaces[req.serialno];
 
     next();
 }, function (req, res, next) {
