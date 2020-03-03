@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/pSnehanshu/charge-point-simulator#readme",
   "dependencies": {
+    "async": "^3.2.0",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "csv-parse": "^4.6.5",

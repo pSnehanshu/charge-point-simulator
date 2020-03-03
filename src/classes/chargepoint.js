@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const shortid = require('shortid');
 const sqlite3 = require('sqlite3');
+const async = require('async');
 const WebSocketClient = require('websocket').client;
 const Session = require('./session');
 const random = require('../utils/random');
@@ -178,7 +179,6 @@ class ChargePoint {
 
     save() {
         return new Promise((resolve, reject) => {
-            var cp = this;
             this.io.emit('save', 'saving');
             var data = JSON.stringify({
                 serialno: this.serialno,
@@ -186,7 +186,6 @@ class ChargePoint {
                 meterValue: this.meterValue,
                 params: this.params,
                 sessions: this.sessions.map(s => typeof s.savable == 'function' ? s.savable() : s),
-                //log: this.io.cps_msglog
             }, null, 2);
 
             // Write
@@ -194,22 +193,43 @@ class ChargePoint {
                 if (err) return reject(err);
 
                 if (this.io.cps_msglog.length > 0) {
-                    var sql = `INSERT INTO logs (type, message, timestamp) VALUES`;
-                    var params = [];
+                    let msglog_batches = [];
+                    let msglog_batch = [];
+                    let batch_size = 20;
+                    let i = 0;
                     this.io.cps_msglog.forEach(log => {
-                        sql += `\n(?, ?, ?),`;
-                        params.push(log.type);
-                        params.push(log.message);
-                        params.push(log.timestamp);
+                        i++;
+                        msglog_batch.push(log);
+                        if (i >= batch_size) {
+                            msglog_batches.push(msglog_batch);
+                            msglog_batch = [];
+                            i = 0;
+                        }
                     });
-                    sql = sql.substring(0, sql.length - 1);
 
-                    this.logsDb.run(sql, params, function (err) {
-                        if (err) return reject(err);
+                    async.waterfall(msglog_batches.map(batch => cb => {
+                        let sql = `INSERT INTO logs (type, message, timestamp) VALUES`;
+                        let params = [];
+                        batch.forEach(log => {
+                            sql += `\n(?, ?, ?),`;
+                            params.push(log.type);
+                            params.push(log.message);
+                            params.push(log.timestamp);
+                        });
+                        sql = sql.substring(0, sql.length - 1);
 
-                        cp.io.cps_msglog = [];
-                        cp.io.emit('save', 'saved');
-                        resolve();
+                        this.logsDb.run(sql, params, err => {
+                            if (err) return cb(err);
+                            else cb(null);
+                        });
+                    }), (err, result) => {
+                        if (err) {
+                            reject(err);
+                        } else {
+                            this.io.cps_msglog = [];
+                            this.io.emit('save', 'saved');
+                            resolve();
+                        }
                     });
                 } else {
                     // No need to save in db
