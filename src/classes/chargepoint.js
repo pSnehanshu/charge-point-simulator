@@ -506,6 +506,9 @@ class ChargePoint {
                 sess.status = 'Accepted';
                 sess.startCharging(onEnd);
 
+                // Registering the session timer
+                this.registerTimer('session', sess.worker);
+
                 // Notify the frontend about this session
                 this.io.cps_emit('session', sess.savable());
 
