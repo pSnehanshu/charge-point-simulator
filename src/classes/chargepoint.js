@@ -172,10 +172,12 @@ class ChargePoint {
         return `It's idle time, no charging until ${this.getParam('endIdleTime')} UTC. Currently ${currentTime} UTC.`;
     }
 
-    getParam(param) {
+    getParam(param, defaultVal = '') {
         let val = this.params[param];
-        if (typeof val == 'undefined') return '';
-        else return val;
+        if (typeof val == 'undefined')
+            return this.setParam(param, defaultVal);
+        else
+            return val;
     }
     setParam(param, val) {
         if (param) {
