@@ -82,9 +82,16 @@ class ChargePoint {
             }
         );
 
-
-        // Parameters of the cp
+        // Default parameters of the cp
         this.params = cpfile.params || {
+            minPause: "23",
+            maxPause: "44",
+            minEnergy: "26",
+            maxEnergy: "68",
+            minPower: "11",
+            maxPower: "22",
+            startIdleTime: "01:10",
+            endIdleTime: "04:09",
             model: 'HOMEADVANCED',
             vendor: 'eNovates',
         };
