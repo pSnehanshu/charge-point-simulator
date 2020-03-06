@@ -80,6 +80,12 @@ block content
         legend Settings
         form(method='post', action=`/cp/${serialno}/params`)
             fieldset.w3-margin.param-fields
+                legend OCPP version
+                select(name="ocppVersion", value=ocppVersion)
+                    option(value="ocpp1.5") OCPP 1.5J
+                    option(value="ocpp1.6") OCPP 1.6J
+
+            fieldset.w3-margin.param-fields
                 legend Pause between charging sessions (min)
                 label Minimum
                     input.w3-input.w3-border(type="number", name="minPause", value=minPause)

@@ -94,6 +94,7 @@ class ChargePoint {
             endIdleTime: "04:09",
             model: 'HOMEADVANCED',
             vendor: 'eNovates',
+            ocppVersion: 'ocpp1.5',
         };
 
         // An instance of Socket.io io()
@@ -259,7 +260,7 @@ class ChargePoint {
             var url = `${process.env.BACKENDURL}/${this.serialno}`
 
             this.client = new WebSocketClient();
-            this.client.connect(url, 'ocpp1.5', null, {
+            this.client.connect(url, this.getParam('ocppVersion', 'ocpp1.5'), null, {
                 Authorization: `Basic ${basicAuth}`,
             });
 

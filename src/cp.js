@@ -40,6 +40,7 @@ module.exports = function (authFunction = null) {
             endIdleTime: req.cp.getParam('endIdleTime'),
             model: req.cp.getParam('model'),
             vendor: req.cp.getParam('vendor'),
+            ocppVersion: req.cp.getParam('ocppVersion'),
         });
     });
 
