@@ -505,7 +505,9 @@ class ChargePoint {
     async charge(uid, onEnd, connectorId = 1) {
         if (this.uids.includes(uid)) {
             try {
-                // set to preparing
+                let ocppVersion = this.getParam('ocppVersion', 'ocpp1.5');
+
+                // set to available
                 var msg = await this.setStatus('Available', connectorId);
 
                 var msg = await this.send('Authorize', { idTag: uid });
@@ -515,7 +517,16 @@ class ChargePoint {
                 }
 
                 // set to preparing
-                var msg = await this.setStatus('Occupied', connectorId);
+                switch (ocppVersion) {
+                    case 'ocpp1.5':
+                        await this.setStatus('Occupied', connectorId);
+                        break;
+                    case 'ocpp1.6':
+                        await this.setStatus('Preparing', connectorId);
+                        break;
+                    default:
+                        return this.io.cps_emit('err', `Unsupported OCPP version ${ocppVersion}`);
+                }
 
                 var sess = new Session(uid, {
                     minEnergy: this.getParam('minEnergy'),
@@ -536,6 +547,7 @@ class ChargePoint {
 
                 // Setting transactionId
                 sess.txId = msg[2].transactionId;
+                sess.connectorId = connectorId;
                 // Start the charging
                 sess.status = 'Accepted';
                 sess.startCharging(onEnd);
@@ -546,6 +558,10 @@ class ChargePoint {
                 // Notify the frontend about this session
                 this.io.cps_emit('session', sess.savable());
 
+                // Set status to Charging
+                if (ocppVersion == 'ocpp1.6') {
+                    await this.setStatus('Charging', connectorId);
+                }
             } catch (error) {
                 this.io.cps_emit('err', error.message);
                 // Since loop has broken, update
@@ -566,6 +582,11 @@ class ChargePoint {
 
             // Check if previous transaction/session was accepted by the backend or not
             if (sess && sess.status == 'Accepted') {
+                // Set status to Finishing
+                if (this.getParam('ocppVersion') == 'ocpp1.6') {
+                    await this.setStatus('Finishing', sess.connectorId);
+                }
+
                 // First StopTransaction
                 // and then start the next transaction/session
                 this.io.cps_emit('message', `Trying to stop charging ${sess.id}...`);
@@ -573,7 +594,7 @@ class ChargePoint {
                 // Updating meterValue
                 this.meterValue += sess.energySpent * 1000;
 
-                var msg = await this.send('StopTransaction', {
+                await this.send('StopTransaction', {
                     idTag: sess.uid,
                     meterStop: this.meterValue,
                     timestamp: new Date,
@@ -586,7 +607,7 @@ class ChargePoint {
                 this.io.cps_emit('success', `${sess.id} has stopped charging`);
 
                 // Set status to Available
-                await this.setStatus('Available');
+                await this.setStatus('Available', sess.connectorId);
 
                 // Check if loop has been distrupted
                 if (!this.inLoop) {

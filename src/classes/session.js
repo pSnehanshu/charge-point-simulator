@@ -24,6 +24,9 @@ class Session {
 
         // An instance of Socket.io io()
         this._io = null;
+
+        // ConnectorId
+        this.connectorId = 1;
     }
 
     get duration() {
