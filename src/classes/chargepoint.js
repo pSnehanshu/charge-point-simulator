@@ -423,6 +423,7 @@ class ChargePoint {
 
     async boot() {
         try {
+            this.accepted = false;
             var retry = 10000;
             this.io.cps_emit('message', 'Sending BootNotification...');
 
@@ -437,17 +438,20 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
-                this.startHeartbeat(90 * 1000);
-            }
-            else if (status == 'Rejected') {
-                this.accepted = false;
+                return this.startHeartbeat(90 * 1000);
+            } else if (status == 'Rejected') {
                 this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
-                this.registerTimer('retry-boot', setTimeout(() => this.boot(), retry));
+                return this.registerTimer('retry-boot', setTimeout(() => this.boot(), retry));
+            } else if (this.getParam('ocppVersion') == 'ocpp1.6') {
+                if (status == 'Pending') {
+                    return this.io.cps_emit('message', `The central system needs more information before the CP can be accepted. It will proceed automatically. Please don't take any action.`);
+                }
             }
+
+            this.io.cps_emit('err', 'Invalid response');
         } catch (err) {
             this.io.cps_emit('err', err);
             this.io.cps_emit('message', `Will resend BootNotification after ${retry / 1000}s...`);
-            this.accepted = false;
             this.registerTimer('retry-boot-on-error', setTimeout(() => this.boot(), retry));
         };
     }
