@@ -81,9 +81,9 @@ block content
         form(method='post', action=`/cp/${serialno}/params`)
             fieldset.w3-margin.param-fields
                 legend OCPP version
-                select(name="ocppVersion", value=ocppVersion)
-                    option(value="ocpp1.5") OCPP 1.5J
-                    option(value="ocpp1.6") OCPP 1.6J
+                select(name="ocppVersion")
+                    option(value="ocpp1.5", selected=(ocppVersion == 'ocpp1.5')) OCPP 1.5J
+                    option(value="ocpp1.6", selected=(ocppVersion == 'ocpp1.6')) OCPP 1.6J
 
             fieldset.w3-margin.param-fields
                 legend Pause between charging sessions (min)
