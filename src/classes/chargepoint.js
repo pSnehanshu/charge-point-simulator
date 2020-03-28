@@ -219,6 +219,7 @@ class ChargePoint {
                             i = 0;
                         }
                     });
+                    msglog_batches.push(msglog_batch);
 
                     async.waterfall(msglog_batches.map(batch => cb => {
                         let sql = `INSERT INTO logs (type, message, timestamp) VALUES`;
@@ -230,8 +231,6 @@ class ChargePoint {
                             params.push(log.timestamp);
                         });
                         sql = sql.substring(0, sql.length - 1);
-
-                        console.log('Executing', sql);
 
                         this.logsDb.run(sql, params, err => {
                             if (err) return cb(err);
