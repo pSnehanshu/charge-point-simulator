@@ -200,7 +200,10 @@ class ChargePoint {
 
             // Write
             fs.writeFile(path.join(cpfileroot, this.serialno + '.json'), data, (err) => {
-                if (err) return reject(err);
+                if (err) {
+                    console.error('Error while saving config', err);
+                    return reject(err);
+                }
 
                 if (this.io.cps_msglog.length > 0) {
                     let msglog_batches = [];
@@ -228,12 +231,15 @@ class ChargePoint {
                         });
                         sql = sql.substring(0, sql.length - 1);
 
+                        console.log('Executing', sql);
+
                         this.logsDb.run(sql, params, err => {
                             if (err) return cb(err);
                             else cb(null);
                         });
                     }), (err, result) => {
                         if (err) {
+                            console.error('Error while saving logs', err);
                             reject(err);
                         } else {
                             this.io.cps_msglog = [];
