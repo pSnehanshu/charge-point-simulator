@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const bodyParser = require('body-parser');
 const fileUpload = require('express-fileupload');
 const cookieParser = require('cookie-parser');
+const glc = require('git-last-commit');
 const ChargePoint = require('./classes/chargepoint');
 const cpRoutes = require('./cp');
 const socket = require('./utils/socket');
@@ -17,9 +18,15 @@ const token = require('./utils/token');
 const Auth = require('./utils/auth');
 const loadExistingChargers = require('./utils/loadExistingChargers');
 
-main();
+glc.getLastCommit(function (err, commit) {
+    if (err) {
+        console.error('GLC', err);
+    }
 
-async function main() {
+    main(commit);
+});
+
+async function main(lasCommit = null) {
     // Express housekeeping
     const port = process.env.PORT || 4300;
     const app = express();
@@ -45,6 +52,11 @@ async function main() {
     }
     */
     global.chargepoints = await loadExistingChargers(io);
+
+    app.get('/last-commit.js', function (req, res) {
+        res.set('Content-Type', 'text/javascript');
+        res.send(`var lastCommit = ${JSON.stringify(lasCommit)};`);
+    });
 
     app.get('/login', function (req, res) {
         res.render('login');
