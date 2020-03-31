@@ -54,12 +54,10 @@ html(lang="en")
                 setInterval(setClock, 500);
 
                 if (lastCommit) {
+                    console.log('Latest commit', lastCommit);
                     var now = Date.now() / 1000;
                     var timePassed = Math.round(now - parseInt(lastCommit.authoredOn));
-                    var link = 'https://github.com/pSnehanshu/charge-point-simulator/commit/' + lastCommit.hash;
-                    var text = '<a target="_blank" href="' + link + '">Latest commit</a> was authored ';
-                    text += millisecondsToStr(timePassed * 1000) + ' ago ';
-                    text += 'by <a href="mailto:' + lastCommit.author.email + '">' + lastCommit.author.name + '</a>';
+                    var text = 'Last updated ' + millisecondsToStr(timePassed * 1000) + ' ago';
                     
                     $('.last-commit-info').html(text);
                 }
