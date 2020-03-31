@@ -41,6 +41,7 @@ module.exports = function (authFunction = null) {
             model: req.cp.getParam('model'),
             vendor: req.cp.getParam('vendor'),
             ocppVersion: req.cp.getParam('ocppVersion'),
+            heartbeat: req.cp.getParam('heartbeat'),
         });
     });
 

@@ -83,7 +83,7 @@ class ChargePoint {
         );
 
         // Default parameters of the cp
-        this.params = cpfile.params || {
+        this.params = {
             minPause: "23",
             maxPause: "44",
             minEnergy: "26",
@@ -95,6 +95,8 @@ class ChargePoint {
             model: 'HOMEADVANCED',
             vendor: 'eNovates',
             ocppVersion: 'ocpp1.5',
+            heartbeat: 90, // seconds
+            ...cpfile.params,
         };
 
         // An instance of Socket.io io()
@@ -443,7 +445,7 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
-                return this.startHeartbeat(90 * 1000);
+                return this.startHeartbeat(parseInt(this.getParam('heartbeat', 90)) * 1000);
             } else if (status == 'Rejected') {
                 this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
                 return this.registerTimer('retry-boot', setTimeout(() => this.boot(), retry));
@@ -467,9 +469,10 @@ class ChargePoint {
      */
     async startHeartbeat(resendAfter = -1) {
         try {
-            var msg = await this.send('Heartbeat');
+            let msg = await this.send('Heartbeat');
             this.io.emit('heartbeat', resendAfter);
             if (resendAfter >= 0) {
+                this.io.cps_emit('message', `Heartbeat interval set at ${Math.round(resendAfter / 1000)} sec`);
                 this.registerTimer('heartbeat', setTimeout(() => this.startHeartbeat(resendAfter), resendAfter));
             }
         } catch (err) {
