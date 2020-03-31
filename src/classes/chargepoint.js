@@ -67,7 +67,7 @@ class ChargePoint {
 
         // Logs SQLite db for logs
         this.logsFile = path.join(cpfileroot, this.serialno + '.logs.db');
-        this.logsDb = new sqlite3.Database(this.logsFile, function (err) {
+        this.logsDb = new sqlite3.Database(this.logsFile, err => {
             if (err) {
                 this.logsDb = null;
                 console.error(err.message);
@@ -75,7 +75,7 @@ class ChargePoint {
         });
         // Create table if not exists
         this.logsDb.run('CREATE TABLE IF NOT EXISTS `logs` ( `sno` INTEGER PRIMARY KEY AUTOINCREMENT , `timestamp` INTEGER NOT NULL , `type` VARCHAR(15) NOT NULL , `message` TEXT NOT NULL );',
-            (err) => {
+            err => {
                 if (err) {
                     console.error('Unable to create logs table:', err);
                 }
