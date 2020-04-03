@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
-    "clean": "echo 'deleting the following files...' && find ./charge-points -type f -iname \\*.json && find ./charge-points -type f -iname \\*.json -delete"
+    "clean": "echo 'deleting the following files...' && find ./charge-points -type f -iname \\*.json && find ./charge-points -type f -iname \\*.json -delete",
+    "deploy": "NODE_ENV=production forever start src/index.js",
+    "stop": "forever stopall",
+    "logs": "forever logs 0"
   },
   "repository": {
     "type": "git",
@@ -34,5 +37,8 @@
     "socket.io": "^2.2.0",
     "sqlite3": "^4.0.9",
     "websocket": "^1.0.28"
+  },
+  "devDependencies": {
+    "forever": "^2.0.0"
   }
 }
