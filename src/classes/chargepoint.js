@@ -109,7 +109,7 @@ class ChargePoint {
         this.status = 'Available';
 
         // Setting meter value (wh)
-        this.meterValue = cpfile.meterValue || 0;
+        this.meterValue = Math.ceil(cpfile.meterValue) || 0;
 
         // A flag to determine whether an auto-charging loop is active or not
         // Please use .inLoop getter instead of this.
@@ -600,7 +600,7 @@ class ChargePoint {
                 this.io.cps_emit('message', `Trying to stop charging ${sess.id}...`);
 
                 // Updating meterValue
-                this.meterValue += sess.energySpent * 1000;
+                this.meterValue += Math.ceil(sess.energySpent * 1000);
 
                 await this.send('StopTransaction', {
                     idTag: sess.uid,
