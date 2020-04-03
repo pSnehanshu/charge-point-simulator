@@ -445,7 +445,9 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
-                return this.startHeartbeat(parseInt(this.getParam('heartbeat', 90)) * 1000);
+                let heartbeat_interval = parseInt(this.getParam('heartbeat', 90));
+                this.startHeartbeat(heartbeat_interval * 1000);
+                return this.io.cps_emit('message', `Heartbeat interval set at ${heartbeat_interval} sec`);
             } else if (status == 'Rejected') {
                 this.io.cps_emit('err', `Charge-point has been rejected by the backend.\nRetying after ${retry / 1000}s...`);
                 return this.registerTimer('retry-boot', setTimeout(() => this.boot(), retry));
@@ -472,7 +474,6 @@ class ChargePoint {
             let msg = await this.send('Heartbeat');
             this.io.emit('heartbeat', resendAfter);
             if (resendAfter >= 0) {
-                this.io.cps_emit('message', `Heartbeat interval set at ${Math.round(resendAfter / 1000)} sec`);
                 this.registerTimer('heartbeat', setTimeout(() => this.startHeartbeat(resendAfter), resendAfter));
             }
         } catch (err) {
