@@ -478,7 +478,7 @@ class ChargePoint {
                     'heartbeat',
                     setTimeout(
                         () => this.startHeartbeat(
-                            parseInt(this.getParam('heartbeat', 90))
+                            parseInt(this.getParam('heartbeat', 90)) * 1000
                         ),
                         resendAfter
                     )
