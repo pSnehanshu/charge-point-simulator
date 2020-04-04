@@ -516,7 +516,6 @@ class ChargePoint {
         if (this.inLoop) {
             return this.io.cps_emit('err', 'Auto-charging loop is already active, please stop the loop before starting a new one.');
         }
-        this.inLoop = true;
         this.io.cps_emit('message', 'Starting auto-charge....');
 
         if (this.uids.length <= 0) {
@@ -524,6 +523,7 @@ class ChargePoint {
             this.io.cps_emit('err', errMSg);
             throw new Error(errMSg);
         }
+        this.inLoop = true;
         this.charge(this.uids[0], this.onSessionEnd());
     }
 
