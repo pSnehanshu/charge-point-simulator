@@ -4,7 +4,7 @@ var leastSno = null;
 // Load existing log messages
 $(function () {
     setCurrentSession(currentSession);
-    var myconsole = $('#console');
+    var myconsole = $('#console-inner');
     myconsole.append(
         $('<pre>').addClass('w3-text-white').text('Loading console...')
     );
@@ -28,15 +28,15 @@ $(function () {
 });
 
 $('#console').scroll(function () {
-    var myconsole = $(this);
-    var pos = myconsole.scrollTop();
+    var myconsole = $('#console-inner');
+    var pos = $(this).scrollTop();
 
     // Run when console is scrolled to top
     if (pos == 0) {
+        var originalHeight = myconsole.height();
         // Find the least sno among the logs
         var before = leastSno;
         $.get(`/cp/${serialno}/msglog?before=${before}`, function (data) {
-            var logsMarkups = [];
             data.reverse().forEach(msg => {
                 if (leastSno == null) {
                     leastSno = parseInt(msg.sno);
@@ -52,15 +52,11 @@ $('#console').scroll(function () {
                     return;
                 }
                 myconsole.prepend(markup);
-                logsMarkups.push(markup);
             });
 
             // Scroll to previous place
-            var previous_height = 0;
-            logsMarkups.forEach(function (log) {
-                previous_height += log.outerHeight();
-            });
-            myconsole.scrollTop(previous_height);
+            var extraHeight = myconsole.height() - originalHeight;
+            myconsole.parent().scrollTop(extraHeight);
         });
     }
 });
@@ -167,7 +163,7 @@ function updateScroll(id) {
     element.scrollTop = element.scrollHeight;
 }
 function addMsg(msg, type = 'message', timestamp, scrollDown = true, dontMount = false) {
-    var myconsole = $('#console');
+    var myconsole = $('#console-inner');
     var pre = $('<pre>');
     var markup = null;
 
