@@ -273,7 +273,6 @@ class ChargePoint {
 
             this.client.on('connectFailed', async (error) => {
                 this.io.cps_emit('err', 'Connection Error: ' + error.toString());
-                reject(error);
 
                 if (reconnect) {
                     this.io.cps_emit('err', `Unable to connect to backend. Will retry after ${reconnect}s`)
@@ -298,6 +297,10 @@ class ChargePoint {
                 connection.on('close', async (reasonCode, description) => {
                     this.io.cps_emit('err', `Websocket Connection Closed: (${reasonCode}) ${description}`);
                     this.connection = null;
+
+                    // Clear all heartbeat timers
+                    this.clearTimers('heartbeat');
+
                     if (this.manual_close) return;
                     try {
                         await this.connect(5);
@@ -445,6 +448,11 @@ class ChargePoint {
             if (status == 'Accepted') {
                 this.accepted = true;
                 this.io.cps_emit('success', 'Charge point has been accepted');
+
+                // Clearing existing heartbeats
+                this.clearTimers('heartbeat');
+
+                // Start a heartbeat loop
                 let heartbeat_interval = parseInt(this.getParam('heartbeat', 90));
                 this.startHeartbeat(heartbeat_interval * 1000);
                 return this.io.cps_emit('message', `Heartbeat interval set at ${heartbeat_interval} sec`);
@@ -749,15 +757,20 @@ class ChargePoint {
         this.timers[name].push(timer);
     }
 
+    clearTimers(name = '') {
+        if (Array.isArray(this.timers[name])) {
+            this.timers[name].forEach(t => clearTimeout(t));
+        } else {
+            clearTimeout(this.timers[name]);
+        }
+        this.timers[name] = [];
+    }
+
     // Stop all the node.js timers and the current active session (if exists)
     async destroy() {
         // Clear all the timers
         for (let timers in this.timers) {
-            if (Array.isArray(this.timers[timers])) {
-                this.timers[timers].forEach(t => clearTimeout(t));
-            } else {
-                clearTimeout(this.timers[timers]);
-            }
+            this.clearTimers(timers);
         }
 
         // TODO: Stop the current session (if exists)
