@@ -55,7 +55,18 @@ async function main(lasCommit = null) {
 
     app.get('/last-commit.js', function (req, res) {
         res.set('Content-Type', 'text/javascript');
-        res.send(`var lastCommit = ${JSON.stringify(lasCommit)};`);
+
+        let js = `function getLastCommit() {`;
+        js += `var lastCommit = ${JSON.stringify(lasCommit)};`;
+        js += `console.log('Latest commit', lastCommit);`;
+        js += `var now = Date.now() / 1000;`;
+        js += `var timePassed = Math.round(now - parseInt(lastCommit.authoredOn));`;
+        js += `var text = 'Last updated ' + millisecondsToStr(timePassed * 1000) + ' ago';`;
+        js += `$('.last-commit-info').html(text);`;
+        js += `return lastCommit`;
+        js += `}`;
+
+        res.send(js);
     });
 
     app.get('/login', function (req, res) {

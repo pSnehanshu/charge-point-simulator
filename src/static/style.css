@@ -3,6 +3,7 @@ body {
     margin:0;
     padding:0;
     height:100%;
+    background-color: #eee;
 }
 #container {
     min-height:100%;
@@ -42,7 +43,13 @@ body {
 .cplink>button:hover{
     border-color: red;
 }
-
 .login-form{
+    max-width: 500px;
+}
+fieldset{
+    background-color: #fff;
+}
+.param-fields{
+    display: inline-block;
     max-width: 500px;
 }

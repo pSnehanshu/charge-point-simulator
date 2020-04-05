@@ -13,11 +13,4 @@ block content
                 li.w3-hover-text-red.cplink
                     a(href=`/cp/${cp.serialno}`) CP ##{cp.serialno}
                     button(title="Remove chargepoint", onclick=`removeCP('${cp.serialno}')`) &times;
-    script.
-        function removeCP(sno) {
-            if (!sno) return;
-            if (confirm('Remove CP #' + sno.toString() + '?')) {
-                var $form = $('<form action="/cp/' + sno + '/remove" method="POST" style="display:none;"></form>');
-                $form.appendTo($('body')).submit();
-            }
-        }
+
