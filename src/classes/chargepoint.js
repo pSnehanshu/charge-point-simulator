@@ -530,6 +530,11 @@ class ChargePoint {
     async charge(uid, onEnd, connectorId = 1) {
         if (this.uids.includes(uid)) {
             try {
+                // Can't charge if status set to unavailable
+                if (this.status === 'Unavailable') {
+                    return this.io.cps_emit('err', `Can't start session because status is "${this.status}"`);;
+                }
+
                 let ocppVersion = this.getParam('ocppVersion', 'ocpp1.5');
 
                 // set to available

@@ -63,4 +63,37 @@ module.exports = function (cp) {
 
         res.success({ status });
     });
+
+    cp.on('ChangeAvailability', function (msg, res) {
+        var { type } = msg[3];
+        var checkAndSetAvailability = async function (status = 'Available') {
+            // Check if any session in progress
+            let lastSession = cp.currentSession;
+
+            if (!lastSession.savable) {
+                // No existing session
+                res.success({ status: 'Accepted' });
+                await cp.setStatus(status);
+            } else {
+                // Set status after the current session is over
+                if (Array.isArray(lastSession.afterEnd)) {
+                    res.success({ status: 'Scheduled' });
+                    lastSession.afterEnd.push(async function () {
+                        await cp.setStatus(status);
+                        cp.inLoop = false;
+                    });
+                } else {
+                    res.success({ status: 'Rejected' });
+                }
+            }
+        };
+
+        if (type === 'Inoperative') {
+            checkAndSetAvailability('Unavailable');
+        } else if (type === 'Operative') {
+            checkAndSetAvailability('Available');
+        } else {
+            res.success({ status: 'Rejected' });
+        }
+    });
 };

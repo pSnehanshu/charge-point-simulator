@@ -27,6 +27,9 @@ class Session {
 
         // ConnectorId
         this.connectorId = 1;
+
+        // An array of functions to be executed after the session is stopped
+        this.afterEnd = [];
     }
 
     get duration() {
@@ -77,7 +80,7 @@ class Session {
     }
 
     // It will kill the worker and call the startCharging's callback
-    stopCharging() {
+    async stopCharging() {
         // If a session is already finished, don't try to stop it
         if (this.stop instanceof Date) {
             throw new Error(`Session ${this.id} has already stopped on ${this.stop.toUTCString()}. Can't stop it again.`);
@@ -86,7 +89,12 @@ class Session {
             this.worker = null;
             this.stop = new Date;
             if (typeof this.onSessionEnd == 'function') {
-                this.onSessionEnd(this);
+                await this.onSessionEnd(this);
+
+                // Executing afterEnd functions
+                if (Array.isArray(this.afterEnd)) {
+                    this.afterEnd.forEach(f => typeof f == 'function' && f(this));
+                }
             }
         }
     }
