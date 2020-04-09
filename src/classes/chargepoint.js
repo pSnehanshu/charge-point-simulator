@@ -403,8 +403,13 @@ class ChargePoint {
                 self.connection.sendUTF(response);
             }
 
-            this.error = function () {
+            this.error = function (errorCode, errorDescription = '', errorDetails = {}) {
+                if (!self.connection) {
+                    return self.io.cps_emit('err', 'Connection with the backend has not yet been established.\nPlease connect to the backend first.');
+                }
 
+                var response = JSON.stringify([4, msg[1], errorCode, errorDescription, errorDetails]);
+                self.connection.sendUTF(response);
             }
         }
 

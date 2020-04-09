@@ -1,3 +1,93 @@
+// Writing only the required keys of the core profile according to v1.6 docs
+const configurationKeys = {
+    AuthorizeRemoteTxRequests: {
+        readonly: false,
+        type: Boolean,
+    },
+    ClockAlignedDataInterval: {
+        readonly: false,
+        type: Number,
+    },
+    ConnectionTimeOut: {
+        readonly: false,
+        type: Number,
+    },
+    ConnectorPhaseRotation: {
+        readonly: false,
+        type: String,
+    },
+    GetConfigurationMaxKeys: {
+        readonly: true,
+        type: Number,
+        value: 100,
+    },
+    HeartbeatInterval: {
+        readonly: false,
+        type: Number,
+    },
+    LocalAuthorizeOffline: {
+        readonly: false,
+        type: Boolean,
+    },
+    LocalPreAuthorize: {
+        readonly: false,
+        type: Boolean,
+    },
+    MeterValuesAlignedData: {
+        readonly: false,
+        type: String,
+    },
+    MeterValuesSampledData: {
+        readonly: false,
+        type: String,
+    },
+    MeterValueSampleInterval: {
+        readonly: false,
+        type: Number,
+    },
+    NumberOfConnectors: {
+        readonly: true,
+        type: Number,
+        value: 1,
+    },
+    ResetRetries: {
+        readonly: false,
+        type: Number,
+    },
+    StopTransactionOnEVSideDisconnect: {
+        readonly: false,
+        type: Boolean,
+    },
+    StopTransactionOnInvalidId: {
+        readonly: false,
+        type: Boolean,
+    },
+    StopTxnAlignedData: {
+        readonly: false,
+        type: String,
+    },
+    StopTxnSampledData: {
+        readonly: false,
+        type: String,
+    },
+    SupportedFeatureProfiles: {
+        readonly: false,
+        type: String,
+    },
+    TransactionMessageAttempts: {
+        readonly: false,
+        type: Number,
+    },
+    TransactionMessageRetryInterval: {
+        readonly: false,
+        type: Number,
+    },
+    UnlockConnectorOnEVSideDisconnect: {
+        readonly: false,
+        type: Boolean,
+    },
+};
+
 module.exports = function (cp) {
     cp.on('Reset', function (msg, res) {
         var payload = msg[3];
@@ -94,6 +184,38 @@ module.exports = function (cp) {
             checkAndSetAvailability('Available');
         } else {
             res.success({ status: 'Rejected' });
+        }
+    });
+
+    cp.on('GetConfiguration', function (msg, res) {
+        let { key } = msg[3];
+        if (Array.isArray(key) && key.every(k => typeof k == 'string')) {
+            let configurationKey = [];
+            let unknownKey = [];
+
+            // Fill-in the keys
+            key.forEach(k => {
+                // Check if key is known
+                if (configurationKeys[k]) {
+                    let keyValue = {
+                        key: k,
+                        readonly: configurationKeys[k].readonly,
+                    };
+                    if (configurationKeys[k].value) {
+                        keyValue.value = configurationKeys[k].value;
+                    }
+                    configurationKey.push(keyValue);
+                } else {
+                    unknownKey.push(k);
+                }
+            });
+
+            res.success({
+                configurationKey,
+                unknownKey
+            });
+        } else {
+            res.error('FormationViolation', '`key` should be an array of string', { key });
         }
     });
 };
