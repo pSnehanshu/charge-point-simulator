@@ -1,55 +1,55 @@
 html,
 body {
-    margin:0;
-    padding:0;
-    height:100%;
-    background-color: #eee;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #eee;
 }
 #container {
-    min-height:100%;
-    position:relative;
+  min-height: 100%;
+  position: relative;
 }
 #header {
-    padding:10px;
+  padding: 10px;
 }
 #body {
-    padding:10px;
-    padding-bottom:60px;   /* Height of the footer */
+  padding: 10px;
+  padding-bottom: 60px; /* Height of the footer */
 }
 #footer {
-    position:absolute;
-    bottom:0;
-    width:100%;
-    height:60px;   /* Height of the footer */
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60px; /* Height of the footer */
 }
-.uid-block{
-    display: inline-block;
-    cursor: default;
+.uid-block {
+  display: inline-block;
+  cursor: default;
 }
-#console{
-    height: 400px;
-    background-color: black;
-    color: white; 
-    overflow: auto;
-    padding: 5px;
+#console {
+  height: 400px;
+  background-color: black;
+  color: white;
+  overflow: auto;
+  padding: 5px;
 }
-.cplink>button{
-    background-color: transparent;
-    border: solid 1px transparent;
-    border-radius: 3px;
-    color: red;
-    margin-left: 10px;
+.cplink > button {
+  background-color: transparent;
+  border: solid 1px transparent;
+  border-radius: 3px;
+  color: red;
+  margin-left: 10px;
 }
-.cplink>button:hover{
-    border-color: red;
+.cplink > button:hover {
+  border-color: red;
 }
-.login-form{
-    max-width: 500px;
+.login-form {
+  max-width: 500px;
 }
-fieldset{
-    background-color: #fff;
+fieldset {
+  background-color: #fff;
 }
-.param-fields{
-    display: inline-block;
-    max-width: 500px;
+.param-fields {
+  display: inline-block;
+  max-width: 500px;
 }

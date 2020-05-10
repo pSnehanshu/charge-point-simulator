@@ -1,41 +1,41 @@
 <!DOCTYPE html>
 html(lang="en")
-    head
-        meta(charset="UTF-8")
-        meta(name="viewport", content="width=device-width, initial-scale=1.0")
-        meta(http-equiv="X-UA-Compatible", content="ie=edge")
-        link(rel="stylesheet", href="/static/w3.css")
-        link(rel="stylesheet", href="/static/style.css")
-        script(src="/static/jquery.min.js")
-        title
-            block title
-    body
-        script.
-            var private = true;
-        #container
-            #header.w3-black.w3-row
-                .w3-col.s12.m4.l4
-                    .w3-margin
-                        a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Go to homepage
-                        .clock
-                .w3-col.s8.m6.l6.private
-                    .w3-right.w3-margin
-                        form(action="/cp", method="get")
-                            .w3-row
-                                .w3-col.s8.m8.l10
-                                    input.w3-input.w3-border(type="text", name="serial", placeholder="Enter CP serial number")
-                                .w3-col.s4.m4.l2
-                                    button.w3-btn.w3-border Go
-                .w3-col.s4.m2.l2.private
-                    .w3-right.w3-margin
-                        form(action="/logout", method="post")
-                            button.w3-button Logout
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
+    meta(http-equiv="X-UA-Compatible" content="ie=edge")
+    link(rel="stylesheet" href="/static/w3.css")
+    link(rel="stylesheet" href="/static/style.css")
+    script(src="/static/jquery.min.js")
+    title
+      block title
+  body
+    script.
+      var private = true;
+    #container
+      #header.w3-black.w3-row
+        .w3-col.s12.m4.l4
+          .w3-margin
+            a.w3-hover-text-red(href="/" style={'text-decoration':'none'} title="Go to home") Go to homepage
+            .clock
+        .w3-col.s8.m6.l6.private
+          .w3-right.w3-margin
+            form(action="/cp" method="get")
+              .w3-row
+                .w3-col.s8.m8.l10
+                  input.w3-input.w3-border(type="text" name="serial" placeholder="Enter CP serial number")
+                .w3-col.s4.m4.l2
+                  button.w3-btn.w3-border Go
+        .w3-col.s4.m2.l2.private
+          .w3-right.w3-margin
+            form(action="/logout" method="post")
+              button.w3-button Logout
 
-            #body.w3-container
-                block content
-            #footer.w3-center
-                .clock.w3-padding
-                .last-commit-info.w3-margin-bottom
-        
-        script(src="/last-commit.js")
-        script(src="/static/script.js")
+      #body.w3-container
+        block content
+      #footer.w3-center
+        .clock.w3-padding
+        .last-commit-info.w3-margin-bottom
+
+    script(src="/last-commit.js")
+    script(src="/static/script.js")

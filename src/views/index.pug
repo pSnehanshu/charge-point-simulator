@@ -1,16 +1,15 @@
 extends layout
 
 block title
-    | Welcome to Charge point simulator
+  | Welcome to Charge point simulator
 
 block content
-    h2 Welcome
+  h2 Welcome
 
-    fieldset
-        legend Active charge points (#{Object.keys(active).length})
-        ul
-            each cp in active
-                li.w3-hover-text-red.cplink
-                    a(href=`/cp/${cp.serialno}`) CP ##{cp.serialno}
-                    button(title="Remove chargepoint", onclick=`removeCP('${cp.serialno}')`) &times;
-
+  fieldset
+    legend Active charge points (#{Object.keys(active).length})
+    ul
+      each cp in active
+        li.w3-hover-text-red.cplink
+          a(href=`/cp/${cp.serialno}`) CP ##{cp.serialno}
+          button(title="Remove chargepoint", onclick=`removeCP('${cp.serialno}')`) &times;

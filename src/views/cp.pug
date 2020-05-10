@@ -1,126 +1,126 @@
 extends layout
 
 block title 
-    | Charge point ##{serialno}
+  | Charge point ##{serialno}
 
 block content
-    -
-        var thisSession = {};
-        if (sessions.length > 0) {
-            var lastSession = sessions[sessions.length - 1];
-            // if lastSession.stop ia an instance of Date, that means the session has finished
-            if (!(lastSession.stop instanceof Date) && typeof lastSession.savable == 'function'){
-                thisSession =  lastSession.savable();
-            }
-        }
-        thisSession = JSON.stringify(thisSession);
+  -
+    var thisSession = {};
+    if (sessions.length > 0) {
+      var lastSession = sessions[sessions.length - 1];
+      // if lastSession.stop ia an instance of Date, that means the session has finished
+      if (!(lastSession.stop instanceof Date) && typeof lastSession.savable == 'function'){
+        thisSession =  lastSession.savable();
+      }
+    }
+    thisSession = JSON.stringify(thisSession);
 
-    script const serialno = '#{serialno}'; var currentSession = !{thisSession};
+  script const serialno = '#{serialno}'; var currentSession = !{thisSession};
 
-    .w3-row.w3-padding.w3-right.w3-margin-right(style={ 'max-width': '100px' })
-        .w3-col.l4.m4.s4
-            #statusIndicator.w3-circle.w3-orange(style={ height: '7px', width: '7px', margin: '4px' })
-        #statusText.w3-col.l8.m8.s8.w3-tiny Unknown
-    button#save.w3-btn.w3-tiny.w3-round.w3-border.w3-right Save
+  .w3-row.w3-padding.w3-right.w3-margin-right(style={ 'max-width': '100px' })
+    .w3-col.l4.m4.s4
+      #statusIndicator.w3-circle.w3-orange(style={ height: '7px', width: '7px', margin: '4px' })
+    #statusText.w3-col.l8.m8.s8.w3-tiny Unknown
+  button#save.w3-btn.w3-tiny.w3-round.w3-border.w3-right Save
 
-    h2 CP ##{serialno}
+  h2 CP ##{serialno}
 
-    fieldset.w3-margin-top
-        legend Actions
-        button.w3-btn.w3-border.w3-ripple#act-connect Connect to backend
-        button.w3-btn.w3-border.w3-ripple.w3-text-red#act-disconnect Disconnect from backend
-        button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
-        button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
-        button.w3-btn.w3-border.w3-ripple.w3-black#act-startautocharge Start Auto-charging
-        button.w3-btn.w3-border.w3-ripple.w3-red#act-stopautocharge Stop Auto-charging
+  fieldset.w3-margin-top
+    legend Actions
+    button.w3-btn.w3-border.w3-ripple#act-connect Connect to backend
+    button.w3-btn.w3-border.w3-ripple.w3-text-red#act-disconnect Disconnect from backend
+    button.w3-btn.w3-border.w3-ripple#act-boot Send BootNotification
+    button.w3-btn.w3-border.w3-ripple#act-heartbeat Send Heartbeat
+    button.w3-btn.w3-border.w3-ripple.w3-black#act-startautocharge Start Auto-charging
+    button.w3-btn.w3-border.w3-ripple.w3-red#act-stopautocharge Stop Auto-charging
 
-    fieldset.w3-margin-top
-        legend Activity log
-        #console
-            #console-inner
-        label.w3-margin
-            input#autoscroll(type="checkbox", checked)
-            |  Auto-scroll
+  fieldset.w3-margin-top
+    legend Activity log
+    #console
+      #console-inner
+    label.w3-margin
+      input#autoscroll(type="checkbox", checked)
+      |  Auto-scroll
 
-    fieldset.w3-margin-top
-        legend Current session
-        .w3-container
-            table.w3-table
-                tr
-                    th Driver UID
-                    th Transaction id
-                    th Start time
-                    th Expected duration
-                    th
-                tr
-                    td#currentUid --
-                    td#currentTxid --
-                    td#currentStartTime --
-                    td#currentDuration --
-                    td
-                        button.w3-btn.w3-red.w3-ripple#stopCurrentSession Stop
+  fieldset.w3-margin-top
+    legend Current session
+    .w3-container
+      table.w3-table
+        tr
+          th Driver UID
+          th Transaction id
+          th Start time
+          th Expected duration
+          th
+        tr
+          td#currentUid --
+          td#currentTxid --
+          td#currentStartTime --
+          td#currentDuration --
+          td
+            button.w3-btn.w3-red.w3-ripple#stopCurrentSession Stop
 
 
-    fieldset.w3-margin-top
-        legend Driver UIDs
-        .w3-border.w3-padding
-            form(action=`/cp/${serialno}/uid-upload`, method="post", enctype="multipart/form-data")
-                label(for="uid-upload") Upload Driver UID.csv file
-                input#uid-upload.w3-margin-left.w3-border(type="file", name="uids")
-                button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
-        .w3-panel
-            each uid in uids
-                .w3-border.w3-border-white.w3-hover-border-grey.w3-padding.uid-block UID ##{uid}
-    
-    fieldset.w3-margin-top
-        legend Settings
-        form(method='post', action=`/cp/${serialno}/params`)
-            fieldset.w3-margin.param-fields
-                legend OCPP version
-                select(name="ocppVersion")
-                    option(value="ocpp1.5", selected=(ocppVersion == 'ocpp1.5')) OCPP 1.5J
-                    option(value="ocpp1.6", selected=(ocppVersion == 'ocpp1.6')) OCPP 1.6J
+  fieldset.w3-margin-top
+    legend Driver UIDs
+    .w3-border.w3-padding
+      form(action=`/cp/${serialno}/uid-upload`, method="post" enctype="multipart/form-data")
+        label(for="uid-upload") Upload Driver UID.csv file
+        input#uid-upload.w3-margin-left.w3-border(type="file" name="uids")
+        button.w3-btn.w3-border.w3-round.w3-margin-left(type="submit") Upload
+    .w3-panel
+      each uid in uids
+        .w3-border.w3-border-white.w3-hover-border-grey.w3-padding.uid-block UID ##{uid}
 
-            fieldset.w3-margin.param-fields
-                legend Pause between charging sessions (min)
-                label Minimum
-                    input.w3-input.w3-border(type="number", name="minPause", value=minPause)
-                label Maximum
-                    input.w3-input.w3-border(type="number", name="maxPause", value=maxPause)
+  fieldset.w3-margin-top
+    legend Settings
+    form(method='post', action=`/cp/${serialno}/params`)
+      fieldset.w3-margin.param-fields
+        legend OCPP version
+        select(name="ocppVersion")
+          option(value="ocpp1.5", selected=(ocppVersion == 'ocpp1.5')) OCPP 1.5J
+          option(value="ocpp1.6", selected=(ocppVersion == 'ocpp1.6')) OCPP 1.6J
 
-            fieldset.w3-margin.param-fields
-                legend Energy (kWh)
-                label Minimum
-                    input.w3-input.w3-border(type="number", name="minEnergy", value=minEnergy)
-                label Maximum
-                    input.w3-input.w3-border(type="number", name="maxEnergy", value=maxEnergy)
-            
-            fieldset.w3-margin.param-fields
-                legend Power (kW)
-                label Minimum
-                    input.w3-input.w3-border(type="number", name="minPower", value=minPower)
-                label Maximum
-                    input.w3-input.w3-border(type="number", name="maxPower", value=maxPower)
+      fieldset.w3-margin.param-fields
+        legend Pause between charging sessions (min)
+        label Minimum
+          input.w3-input.w3-border(type="number" name="minPause", value=minPause)
+        label Maximum
+          input.w3-input.w3-border(type="number" name="maxPause", value=maxPause)
 
-            fieldset.w3-margin.param-fields
-                legend No charging between (UTC)
-                label Start
-                    input.w3-input.w3-border(type="time", name="startIdleTime", value=startIdleTime)
-                label End
-                    input.w3-input.w3-border(type="time", name="endIdleTime", value=endIdleTime)
-            
-            fieldset.w3-margin.param-fields
-                legend Branding
-                label Model
-                    input.w3-input.w3-border(type="text", name="model", value=model)
-                label Vendor
-                    input.w3-input.w3-border(type="text", name="vendor", value=vendor)
-            
-            fieldset.w3-margin.param-fields
-                legend Hearbeat interval (sec)
-                input.w3-input.w3-border(type="number", name="heartbeat", value=heartbeat)
+      fieldset.w3-margin.param-fields
+        legend Energy (kWh)
+        label Minimum
+          input.w3-input.w3-border(type="number" name="minEnergy", value=minEnergy)
+        label Maximum
+          input.w3-input.w3-border(type="number" name="maxEnergy", value=maxEnergy)
 
-            button.w3-btn.w3-border.w3-round.w3-margin(type="submit") Save
-            
-    script(src="/static/socket.io.js")
-    script(src="/static/cps.js")
+      fieldset.w3-margin.param-fields
+        legend Power (kW)
+        label Minimum
+          input.w3-input.w3-border(type="number" name="minPower", value=minPower)
+        label Maximum
+          input.w3-input.w3-border(type="number" name="maxPower", value=maxPower)
+
+      fieldset.w3-margin.param-fields
+        legend No charging between (UTC)
+        label Start
+          input.w3-input.w3-border(type="time" name="startIdleTime", value=startIdleTime)
+        label End
+          input.w3-input.w3-border(type="time" name="endIdleTime", value=endIdleTime)
+
+      fieldset.w3-margin.param-fields
+        legend Branding
+        label Model
+          input.w3-input.w3-border(type="text" name="model", value=model)
+        label Vendor
+          input.w3-input.w3-border(type="text" name="vendor", value=vendor)
+
+      fieldset.w3-margin.param-fields
+        legend Hearbeat interval (sec)
+        input.w3-input.w3-border(type="number" name="heartbeat", value=heartbeat)
+
+      button.w3-btn.w3-border.w3-round.w3-margin(type="submit") Save
+
+  script(src="/static/socket.io.js")
+  script(src="/static/cps.js")
