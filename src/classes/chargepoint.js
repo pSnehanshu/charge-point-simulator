@@ -24,7 +24,7 @@ class ChargePoint {
 
         /* Structure of CallHandlers
             {
-                <Action>: <cb>,
+                <Action>: <cb>, cb receives err and msg
                 .
                 .
                 .
@@ -332,7 +332,14 @@ class ChargePoint {
                             if (!Array.isArray(this.callResultHandlers[id])) {
                                 this.callResultHandlers[id] = [this.callResultHandlers[id]];
                             }
-                            this.callResultHandlers[id].forEach(cb => typeof cb == 'function' && cb(msg));
+                            
+                            // Check if any error occured
+                            let error = null;
+                            if (type == 4) {
+                                error = new Error(`${msg[2]}: "${msg[3]}".\n${JSON.stringify(msg[4], null, 2)}`);
+                            }
+                            this.callResultHandlers[id].forEach(cb => typeof cb == 'function' && cb(error, msg));
+                            
                             // After all response handled, removed the CALL
                             delete this.callResultHandlers[id];
                         }
@@ -381,9 +388,14 @@ class ChargePoint {
                     this.clearPendingCall(pendingId);
                     reject(err);
                 } else {
-                    this.registerCall(uniqueId, m => {
+                    this.registerCall(uniqueId, (err, msg) => {
                         this.clearPendingCall(pendingId);
-                        resolve(m)
+
+                        if (err) {
+                            reject(err);
+                        } else {
+                            resolve(msg);
+                        }
                     });
                 }
             });
