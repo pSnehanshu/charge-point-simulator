@@ -715,8 +715,7 @@ class ChargePoint {
         }
       } catch (error) {
         this.io.cps_emit("err", error.message);
-        // Since loop has broken, update
-        this._inLoop = false;
+        return onEnd();
       }
     } else {
       let errMsg = `The UID ${uid} isn't assigned to this chargepoint. Can't initiate the session.`;
