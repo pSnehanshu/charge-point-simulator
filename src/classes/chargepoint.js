@@ -765,14 +765,25 @@ class ChargePoint {
         }
 
         // Carry on charging the next
-        let pause = 0;
-        if (this.isIdleTime()) {
-          this.io.cps_emit("message", this.idleTimeMessage);
-          pause = (this.getIdleTime().endIdleTime - new Date()) / 60000;
-        }
 
         // Put a random pause
-        pause += random(this.getParam("minPause"), this.getParam("maxPause"));
+        let pause = random(
+          this.getParam("minPause"),
+          this.getParam("maxPause")
+        );
+
+        let time_after_pause = Date.now() + pause * 60000;
+
+        if (this.isIdleTime(time_after_pause)) {
+          // this.io.cps_emit("message", this.idleTimeMessage);
+          pause +=
+            (this.getIdleTime().endIdleTime - new Date(time_after_pause)) /
+            60000;
+
+          // Put another pause to make sure that session don't always start right after idle time ends
+          pause += random(this.getParam("minPause"), this.getParam("maxPause"));
+        }
+
         this.io.cps_emit(
           "message",
           `Waiting ${Math.round(pause)} min until next charge`
@@ -812,10 +823,13 @@ class ChargePoint {
     };
   }
 
-  isIdleTime() {
+  isIdleTime(time) {
     let { startIdleTime, endIdleTime } = this.getIdleTime();
     if (startIdleTime && endIdleTime) {
       let currentTime = new Date();
+      if (time) {
+        currentTime = new Date(time);
+      }
       return currentTime > startIdleTime && currentTime < endIdleTime;
     } else {
       return false;
