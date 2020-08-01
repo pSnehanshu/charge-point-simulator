@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require('path');
+require("dotenv").config({ path: path.join(__dirname, '..', '.env') });
 
 if (!(process.env.PASSWORD && process.env.SECRET)) {
   throw new Error("Please set PASSWORD and SECRET to start.");
@@ -37,9 +38,9 @@ async function main(lasCommit = null) {
   const auth = Auth(tokenName); // The auth middleware
 
   app.set("view engine", "pug");
-  app.set("views", "./src/views");
+  app.set("views", path.join(__dirname, "views"));
   app.use(helmet());
-  app.use("/static", express.static("./src/static"));
+  app.use("/static", express.static(path.join(__dirname, "static")));
   app.use(fileUpload());
   app.use(bodyParser.urlencoded({ extended: true }));
   app.use(cookieParser());
