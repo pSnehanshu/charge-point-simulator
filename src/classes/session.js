@@ -8,7 +8,7 @@ class Session {
     this.uid = uid;
 
     // Params
-    this.energy = random(params.minEnergy, params.maxEnergy); // in kWh
+    this.energy = random(params.minEnergy, 60); // in kWh
     this.power = random(params.minPower, 22); // in kW
     this.start = new Date();
     this.stop = null;
