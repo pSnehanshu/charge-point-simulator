@@ -9,8 +9,8 @@ class Session {
 
     // Params
     this.energy = random(params.minEnergy, params.maxEnergy); // in kWh
-    this.power = random(params.minPower, params.maxPower); // in kW
-    this.start = params.start || new Date();
+    this.power = random(params.minPower, 22); // in kW
+    this.start = new Date();
     this.stop = null;
 
     // The charging timer
