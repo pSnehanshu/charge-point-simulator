@@ -1,3 +1,5 @@
+const _ = require("lodash");
+
 module.exports = getRandomNumber;
 
 /**
@@ -6,7 +8,5 @@ module.exports = getRandomNumber;
  * @param {Number} max
  */
 function getRandomNumber(min = 0, max = 100) {
-  max = parseFloat(max);
-  min = parseFloat(min);
-  return Math.floor(Math.random() * (max - min) + min);
+  return _.random(min, max);
 }

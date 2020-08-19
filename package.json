@@ -32,6 +32,7 @@
     "git-last-commit": "^1.0.0",
     "helmet": "^3.21.2",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.20",
     "pug": "^2.0.3",
     "shortid": "^2.2.14",
     "socket.io": "^2.2.0",

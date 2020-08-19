@@ -3,6 +3,7 @@ const path = require("path");
 const shortid = require("shortid");
 const sqlite3 = require("sqlite3");
 const async = require("async");
+const _ = require("lodash");
 const WebSocketClient = require("websocket").client;
 const Session = require("./session");
 const random = require("../utils/random");
@@ -182,14 +183,10 @@ class ChargePoint {
   }
 
   getParam(param, defaultVal = "") {
-    let val = this.params[param];
-    if (typeof val == "undefined") return this.setParam(param, defaultVal);
-    else return val;
+    return _.get(this.params, param, defaultVal);
   }
   setParam(param, val) {
-    if (param) {
-      this.params[param] = val;
-    }
+    _.set(this.params, param, val);
     return val;
   }
 
