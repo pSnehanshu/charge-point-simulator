@@ -739,7 +739,20 @@ class ChargePoint {
         this.io.cps_emit("message", `Trying to stop charging ${sess.id}...`);
 
         // Updating meterValue
-        this.meterValue += Math.ceil(sess.energySpent * 1000);
+        // FIX: Requested by Andrew to limit reported energy
+        const MaxEnergy = 60; // kWh
+        const MaxPower = 22; // kW
+        const SessTimeElapsed = sess.elapsed / 60; // hours
+        let consumedEnergy = Math.ceil(sess.energySpent); // in kWh
+        if (consumedEnergy > MaxEnergy) {
+          consumedEnergy = MaxEnergy;
+        }
+        let meterEnd = this.meterValue + consumedEnergy * 1000; // in Wh
+        if (consumedEnergy / SessTimeElapsed > MaxPower) {
+          meterEnd = this.meterValue + (MaxPower * 1000) * SessTimeElapsed;
+        }
+        this.meterValue = meterEnd;
+        // FIX END
 
         await this.send("StopTransaction", {
           idTag: sess.uid,
