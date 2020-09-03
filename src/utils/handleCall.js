@@ -190,35 +190,54 @@ module.exports = function (cp) {
 
   cp.on("GetConfiguration", function (msg, res) {
     let { key } = msg[3];
-    if (Array.isArray(key) && key.every((k) => typeof k == "string")) {
-      let configurationKey = [];
-      let unknownKey = [];
 
-      // Fill-in the keys
-      key.forEach((k) => {
-        // Check if key is known
-        if (configurationKeys[k]) {
-          let keyValue = {
-            key: k,
-            readonly: configurationKeys[k].readonly,
-          };
-          if (configurationKeys[k].value) {
-            keyValue.value = configurationKeys[k].value;
+    if (Array.isArray(key)) {
+      if (key.every((k) => typeof k == "string")) {
+        let configurationKey = [];
+        let unknownKey = [];
+
+        // Fill-in the keys
+        key.forEach((k) => {
+          // Check if key is known
+          if (configurationKeys[k]) {
+            let keyValue = {
+              key: k,
+              readonly: configurationKeys[k].readonly,
+            };
+            if (configurationKeys[k].value) {
+              keyValue.value = configurationKeys[k].value;
+            }
+            configurationKey.push(keyValue);
+          } else {
+            unknownKey.push(k);
           }
-          configurationKey.push(keyValue);
-        } else {
-          unknownKey.push(k);
-        }
-      });
+        });
+
+        res.success({
+          configurationKey,
+          unknownKey,
+        });
+      } else {
+        res.error("FormationViolation", "`key` should be an array of string", {
+          key,
+        });
+      }
+    } else {
+      // Send All
+      const configurationKeysToRespond = [];
+
+      for (const key in configurationKeys) {
+        configurationKeysToRespond.push({
+          key,
+          readonly: !!configurationKeys[key].readonly,
+          value: configurationKeys[key].value,
+        })
+      }
 
       res.success({
-        configurationKey,
-        unknownKey,
-      });
-    } else {
-      res.error("FormationViolation", "`key` should be an array of string", {
-        key,
-      });
+        configurationKey: configurationKeysToRespond,
+        unknownKey: [],
+      })
     }
   });
 };
