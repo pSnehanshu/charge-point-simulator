@@ -743,7 +743,7 @@ class ChargePoint {
         const MaxEnergy = 60; // kWh
         const MaxPower = 22; // kW
         const SessTimeElapsed = sess.elapsed / 60; // hours
-        let consumedEnergy = Math.ceil(sess.energySpent); // in kWh
+        let consumedEnergy = sess.energySpent; // in kWh
         if (consumedEnergy > MaxEnergy) {
           consumedEnergy = MaxEnergy;
         }
@@ -751,7 +751,7 @@ class ChargePoint {
         if (consumedEnergy / SessTimeElapsed > MaxPower) {
           meterEnd = this.meterValue + (MaxPower * 1000) * SessTimeElapsed;
         }
-        this.meterValue = meterEnd;
+        this.meterValue = Math.ceil(meterEnd);
         // FIX END
 
         await this.send("StopTransaction", {
